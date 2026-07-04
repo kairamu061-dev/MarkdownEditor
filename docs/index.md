@@ -9,3 +9,6 @@
 
 <!-- 機能エリア・サブ項目が追加されるたびに追記する -->
 - [app-shell](./app-shell/overview.md)
+- [editor](./editor/overview.md)
+  - [core](./editor/core/overview.md)
+  - [live-preview](./editor/live-preview/overview.md)
