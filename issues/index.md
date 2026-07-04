@@ -15,3 +15,4 @@
 
 | ID | タイトル | タグ | ステート |
 |----|---------|------|---------|
+| [BUG-001](./tickets/BUG-001.md) | add-feature.sh が CRLF 改行のため Linux で実行不能 | tooling | Fixed |
