@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarkdownEditor</title>
+    <link rel="stylesheet" href="/src/styles/nord.css" />
+    <link rel="stylesheet" href="/src/styles/app.css" />
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+  <body>
+    <div id="app">
+      <button
+        id="sidebar-toggle"
+        class="sidebar-toggle"
+        title="サイドバーを開閉 (Ctrl+B)"
+        aria-expanded="true"
+      >
+        ☰
+      </button>
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">ファイル</span>
+        </div>
+        <div id="sidebar-content" class="sidebar-content">
+          <!-- file-explorer フィーチャーエリアで実装 -->
+        </div>
+      </aside>
+      <main id="main" class="main">
+        <div id="main-content" class="main-content">
+          <!-- editor フィーチャーエリアで実装 -->
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

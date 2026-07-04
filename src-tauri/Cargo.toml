@@ -1,0 +1,25 @@
+[package]
+name = "markdown-editor"
+version = "0.1.0"
+description = "Lightweight markdown editor for Windows 11"
+edition = "2021"
+
+[lib]
+name = "markdown_editor_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+# 省メモリ・小サイズ方針に合わせた最適化
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
+panic = "abort"

@@ -1,0 +1,86 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: "Segoe UI Variable", "Segoe UI", "Yu Gothic UI", sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background-color: var(--bg-primary);
+  user-select: none;
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+}
+
+/* --- サイドバー開閉トグル（常にウィンドウ左上） --- */
+.sidebar-toggle {
+  position: fixed;
+  top: 6px;
+  left: 8px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-strong);
+}
+
+/* --- サイドバー --- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 260px;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.sidebar.hidden {
+  display: none;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding-left: 44px; /* トグルボタンの分の余白 */
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-title {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* --- メインコンテンツ --- */
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  overflow: hidden;
+}

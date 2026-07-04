@@ -11,7 +11,8 @@
 
 | 問題 | 対処 |
 |------|------|
-|      |      |
+| devcontainer に Rust / Tauri の Linux 依存ライブラリが未導入だった | rustup で Rust stable を、apt で build-essential / libwebkit2gtk-4.1-dev / libgtk-3-dev / librsvg2-dev 等を導入（2026-07-04）。コンテナ再作成時に消えるため、恒久化するには .devcontainer/Dockerfile への追加が必要（ユーザへの要望参照） |
+| バンドルターゲット（MSI/NSIS）は Windows 専用のため Linux でビルド不可 | Linux では `tauri build -- --no-bundle` でバイナリ生成までを検証。GUI 動作は Xvfb 上で起動・スクリーンショット・Ctrl+B 操作により確認（test-cases.md 参照） |
 
 ## 設計からの変更点
 
@@ -26,3 +27,4 @@
 ## ユーザへの要望
 
 - Windows 11 実機での最終動作確認をお願いしたい（開発環境が Linux devcontainer のため Linux 上の検証まで）
+- .devcontainer/Dockerfile に Rust ツールチェーンと Tauri の Linux 依存ライブラリを追加してコンテナを再ビルドすると、環境構築の再実行が不要になる（希望があれば Dockerfile の変更案を用意する）
