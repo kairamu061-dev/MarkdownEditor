@@ -20,6 +20,7 @@ pub fn run() {
             vault::delete_path,
             settings::get_settings,
             settings::save_settings,
+            settings::save_editor_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

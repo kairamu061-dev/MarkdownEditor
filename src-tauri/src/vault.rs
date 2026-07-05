@@ -105,6 +105,18 @@ fn set_root(state: &State<'_, VaultState>, root: PathBuf) {
     *state.0.lock().unwrap() = Some(root);
 }
 
+/// lastVault を更新する。失敗してもオープン処理はブロックしない
+fn remember_vault(app: &tauri::AppHandle, root: &Path) {
+    let result = crate::settings::settings_path(app).and_then(|path| {
+        let mut settings = crate::settings::load(&path);
+        settings.last_vault = Some(root.to_string_lossy().into_owned());
+        crate::settings::save(&path, &settings)
+    });
+    if let Err(e) = result {
+        eprintln!("failed to remember vault: {e}");
+    }
+}
+
 #[tauri::command]
 pub async fn pick_vault(
     app: tauri::AppHandle,
@@ -115,20 +127,31 @@ pub async fn pick_vault(
     };
     let root = picked.into_path().map_err(|e| e.to_string())?;
     let info = vault_info(&root)?;
+    remember_vault(&app, &root);
     set_root(&state, root);
     Ok(Some(info))
 }
 
 #[tauri::command]
-pub fn initial_vault(state: State<'_, VaultState>) -> Result<Option<VaultInfo>, String> {
+pub fn initial_vault(
+    app: tauri::AppHandle,
+    state: State<'_, VaultState>,
+) -> Result<Option<VaultInfo>, String> {
+    // 解決順: 起動引数 > MDE_VAULT > 記憶した lastVault（spec 参照）
     let candidate = std::env::args()
         .nth(1)
         .or_else(|| std::env::var("MDE_VAULT").ok())
+        .or_else(|| {
+            crate::settings::settings_path(&app)
+                .ok()
+                .and_then(|path| crate::settings::load(&path).last_vault)
+        })
         .map(PathBuf::from)
         .filter(|p| p.is_dir());
     match candidate {
         Some(root) => {
             let info = vault_info(&root)?;
+            remember_vault(&app, &root);
             set_root(&state, root);
             Ok(Some(info))
         }

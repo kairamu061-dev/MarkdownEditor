@@ -16,7 +16,9 @@ export const nordTheme = EditorView.theme(
       outline: "none",
     },
     ".cm-scroller": {
-      fontFamily: "inherit",
+      // フォントは settings/ui が設定する CSS 変数を参照（未設定時はシステムフォント/14px）
+      fontFamily: "var(--editor-font-family, inherit)",
+      fontSize: "var(--editor-font-size, 14px)",
       lineHeight: "1.6",
     },
     ".cm-content": {

@@ -51,6 +51,18 @@ pub fn save_settings(app: tauri::AppHandle, settings: Settings) -> Result<(), St
     save(&settings_path(&app)?, &settings)
 }
 
+/// editor フィールドのみ部分更新する（lastVault との書き込み競合を避ける）
+#[tauri::command]
+pub fn save_editor_settings(
+    app: tauri::AppHandle,
+    editor: EditorSettings,
+) -> Result<(), String> {
+    let path = settings_path(&app)?;
+    let mut settings = load(&path);
+    settings.editor = editor;
+    save(&path, &settings)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -70,6 +70,7 @@
 
 /* --- 新規ノートボタン --- */
 .sidebar-add-button {
+  order: 2; /* ヘッダ内の表示順: タイトル → [+] → ⚙（DOM 挿入順に依存させない） */
   margin-left: auto;
   margin-right: 8px;
   width: 24px;

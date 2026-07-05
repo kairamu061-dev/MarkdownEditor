@@ -6,7 +6,8 @@
 |---|--------|------|
 | 1 | `get_settings` コマンド | settings.json を読み込んで返す。未存在・破損時はデフォルト値 |
 | 2 | `save_settings` コマンド | 受け取った設定を pretty JSON で保存（親ディレクトリは自動作成） |
-| 3 | 内部ヘルパ | vault-restore が使う load / save 関数（パス指定可能でテスト可能） |
+| 3 | `save_editor_settings` コマンド | editor フィールドのみ部分更新（ファイルを読み直して差し替え。lastVault を上書きしない。ui 用） |
+| 4 | 内部ヘルパ | vault-restore が使う load / save 関数（パス指定可能でテスト可能） |
 
 ## 設定スキーマ
 

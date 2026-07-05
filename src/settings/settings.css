@@ -1,0 +1,98 @@
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(0 0 0 / 40%);
+}
+
+.settings-modal {
+  width: 320px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-sidebar);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 50%);
+}
+
+.settings-title {
+  margin: 0 0 12px;
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.settings-field input {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: var(--bg-primary);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.settings-field input:focus {
+  border-color: var(--accent);
+}
+
+.settings-error {
+  margin-bottom: 8px;
+  color: var(--error);
+  font-size: 12px;
+}
+
+.settings-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.settings-buttons button {
+  padding: 5px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-hover);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.settings-buttons button:hover {
+  color: var(--text-strong);
+}
+
+.settings-buttons button.primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ⚙ ボタン（[+] と同スタイル、右端寄せは [+] 側が担う） */
+.sidebar-gear-button {
+  order: 3; /* [+] の右隣（explorer.css の order 参照） */
+  margin-right: 8px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sidebar-gear-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-strong);
+}
