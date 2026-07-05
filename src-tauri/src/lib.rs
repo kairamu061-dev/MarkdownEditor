@@ -1,3 +1,4 @@
+mod settings;
 mod vault;
 
 use std::sync::Mutex;
@@ -17,6 +18,8 @@ pub fn run() {
             vault::create_note,
             vault::rename_path,
             vault::delete_path,
+            settings::get_settings,
+            settings::save_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
