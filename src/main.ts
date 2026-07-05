@@ -2,13 +2,18 @@ import { initSidebar } from "./shell/sidebar";
 import { mountEditor } from "./editor";
 import { livePreview } from "./editor/live-preview";
 import { codeBlockStyle } from "./editor/code-block";
-import { initExplorer, explorerDocChanged } from "./explorer";
+import { wikilink } from "./editor/wikilink";
+import { initExplorer, explorerDocChanged, openNoteByName } from "./explorer";
 import { initSettings } from "./settings";
 
 initSidebar(document.getElementById("app")!);
 initSettings();
 const editor = mountEditor(document.getElementById("main-content")!, {
-  extraExtensions: [livePreview(), codeBlockStyle()],
+  extraExtensions: [
+    livePreview(),
+    codeBlockStyle(),
+    wikilink((name) => void openNoteByName(name)),
+  ],
   onDocChanged: explorerDocChanged,
 });
 editor.focus();

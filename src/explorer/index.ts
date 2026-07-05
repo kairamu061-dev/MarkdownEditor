@@ -98,6 +98,28 @@ export async function refreshTree(): Promise<void> {
   }
 }
 
+/** wikilink 用。`名前.md` に一致する最初のノートを開く（大文字小文字無視・深さ優先） */
+export async function openNoteByName(name: string): Promise<void> {
+  const wanted = `${name}.md`.toLowerCase();
+  const find = (nodes: TreeNode[]): string | null => {
+    for (const node of nodes) {
+      if (node.isDir) {
+        const hit = find(node.children);
+        if (hit) return hit;
+      } else if (node.name.toLowerCase() === wanted) {
+        return node.path;
+      }
+    }
+    return null;
+  };
+  const path = state.vault ? find(state.vault.tree) : null;
+  if (path) {
+    await openNote(path);
+  } else {
+    showStatus(`ノートが見つかりません: ${name}`);
+  }
+}
+
 type ContextMenuHandler = (e: MouseEvent, path: string, row: HTMLElement) => void;
 let contextMenuHandler: ContextMenuHandler | null = null;
 
