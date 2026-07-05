@@ -1,0 +1,147 @@
+/* --- ヴォールト未オープン --- */
+.vault-empty {
+  display: flex;
+  justify-content: center;
+  padding: 24px 12px;
+}
+
+.vault-open-button {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-hover);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.vault-open-button:hover {
+  color: var(--text-strong);
+  border-color: var(--accent);
+}
+
+/* --- ファイルツリー --- */
+.tree {
+  padding: 8px 4px;
+  font-size: 13px;
+}
+
+.tree ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 14px;
+}
+
+.tree > ul {
+  padding-left: 0;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-row:hover {
+  background-color: var(--bg-hover);
+}
+
+.tree-row.active {
+  background-color: var(--bg-hover);
+  color: var(--text-strong);
+}
+
+.tree-folder-icon {
+  flex: 0 0 auto;
+  width: 12px;
+  color: var(--border);
+  font-size: 10px;
+}
+
+.tree-item.collapsed > ul {
+  display: none;
+}
+
+/* --- 新規ノートボタン --- */
+.sidebar-add-button {
+  margin-left: auto;
+  margin-right: 8px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.sidebar-add-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-strong);
+}
+
+/* --- コンテキストメニュー --- */
+.context-menu {
+  position: fixed;
+  z-index: 100;
+  min-width: 140px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-hover);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.context-menu-item:hover {
+  background-color: var(--border);
+  color: var(--text-strong);
+}
+
+.context-menu-item.danger {
+  color: var(--error);
+}
+
+/* --- リネーム入力 --- */
+.rename-input {
+  width: 100%;
+  padding: 2px 4px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background-color: var(--bg-primary);
+  color: var(--text-strong);
+  font-size: 13px;
+  outline: none;
+}
+
+/* --- ステータス --- */
+.explorer-status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 12px;
+  background-color: var(--bg-hover);
+  color: var(--error);
+  font-size: 12px;
+}
