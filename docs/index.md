@@ -12,3 +12,7 @@
 - [editor](./editor/overview.md)
   - [core](./editor/core/overview.md)
   - [live-preview](./editor/live-preview/overview.md)
+- [file-explorer](./file-explorer/overview.md)
+  - [vault](./file-explorer/vault/overview.md)
+  - [tree-view](./file-explorer/tree-view/overview.md)
+  - [file-ops](./file-explorer/file-ops/overview.md)
