@@ -4,11 +4,11 @@
 
 <!-- ステータス: [ ] 未着手 / [~] 進行中 / [x] 完了 -->
 
-- [ ] live-preview.ts の ViewPlugin / Decoration 実装（見出し・強調・打ち消し・コード）
-- [ ] インラインリンクの整形（LinkMark / URL の隠蔽）
-- [ ] 箇条書きマークの • ウィジェット置換
-- [ ] main.ts への注入
-- [ ] Xvfb でカーソル内/外の 2 状態をスクリーンショット検証
+- [x] live-preview.ts の ViewPlugin / Decoration 実装（見出し・強調・打ち消し・コード）
+- [x] インラインリンクの整形（LinkMark / URL の隠蔽）
+- [x] 箇条書きマークの • ウィジェット置換
+- [x] main.ts への注入
+- [x] Xvfb でカーソル内/外の 2 状態をスクリーンショット検証
 
 ## 依存関係
 
