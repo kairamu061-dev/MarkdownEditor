@@ -61,4 +61,15 @@ export const nordHighlightStyle = HighlightStyle.define([
   { tag: t.contentSeparator, color: "var(--border)" },
   { tag: t.processingInstruction, color: "var(--border)" },
   { tag: t.labelName, color: "var(--accent-secondary)" },
+
+  // コードブロック内トークン（editor/code-highlight spec の配色表に対応）
+  { tag: t.keyword, color: "var(--accent-secondary)" },
+  { tag: [t.string, t.special(t.string)], color: "var(--success)" },
+  { tag: t.comment, color: "var(--border)", fontStyle: "italic" },
+  { tag: [t.number, t.bool, t.atom], color: "var(--nord15)" },
+  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "var(--accent)" },
+  { tag: [t.typeName, t.className, t.namespace], color: "var(--nord7)" },
+  { tag: t.propertyName, color: "var(--text)" },
+  { tag: [t.operator, t.punctuation], color: "var(--accent-secondary)" },
+  { tag: [t.variableName, t.name], color: "var(--text)" },
 ]);

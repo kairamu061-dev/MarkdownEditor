@@ -14,6 +14,7 @@ import {
 } from "@codemirror/commands";
 import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import { languages } from "@codemirror/language-data";
 import { nordTheme, nordHighlightStyle } from "./theme";
 import { SCRATCH_DOC } from "./scratch";
 
@@ -46,7 +47,7 @@ export function mountEditor(
     dropCursor(),
     indentOnInput(),
     EditorView.lineWrapping,
-    markdown({ base: markdownLanguage }),
+    markdown({ base: markdownLanguage, codeLanguages: languages }),
     syntaxHighlighting(nordHighlightStyle),
     nordTheme,
     keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),

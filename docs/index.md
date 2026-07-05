@@ -20,3 +20,5 @@
   - [store](./settings/store/overview.md)
   - [vault-restore](./settings/vault-restore/overview.md)
   - [ui](./settings/ui/overview.md)
+  - [code-highlight](./editor/code-highlight/overview.md)
+  - [wikilink](./editor/wikilink/overview.md)

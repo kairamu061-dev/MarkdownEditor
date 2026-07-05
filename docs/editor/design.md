@@ -4,6 +4,8 @@
 
 - [core](./core/design.md) — CodeMirror 6 エディタ本体、Nord テーマ、公開 API
 - [live-preview](./live-preview/design.md) — 記法マークの表示/非表示（ライブプレビュー）
+- [code-highlight](./code-highlight/design.md) — コードブロックの言語別ハイライト
+- [wikilink](./wikilink/design.md) — `[[ノート名]]` リンク
 
 ## 横断事項
 
