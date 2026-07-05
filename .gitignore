@@ -8,3 +8,6 @@ src-tauri/gen/schemas/
 
 # Logs
 *.log
+
+# 一時作業ファイル（動作確認チェックリスト等）
+tmp/
