@@ -17,6 +17,8 @@ interface ExplorerState {
   currentPath: string | null;
   saveTimer: number | null;
   pendingContent: string | null;
+  /** 折りたたまれているフォルダの相対パス。再描画をまたいで開閉状態を保持する（BUG-002） */
+  collapsedDirs: Set<string>;
 }
 
 const state: ExplorerState = {
@@ -24,6 +26,7 @@ const state: ExplorerState = {
   currentPath: null,
   saveTimer: null,
   pendingContent: null,
+  collapsedDirs: new Set(),
 };
 
 let container: HTMLElement;
@@ -158,14 +161,18 @@ function renderNodes(nodes: TreeNode[]): HTMLUListElement {
     row.dataset.isDir = String(node.isDir);
 
     if (node.isDir) {
+      const collapsed = state.collapsedDirs.has(node.path);
       const icon = document.createElement("span");
       icon.className = "tree-folder-icon";
-      icon.textContent = "▾";
+      icon.textContent = collapsed ? "▸" : "▾";
       row.appendChild(icon);
       row.appendChild(document.createTextNode(node.name));
+      if (collapsed) li.classList.add("collapsed");
       row.addEventListener("click", () => {
-        li.classList.toggle("collapsed");
-        icon.textContent = li.classList.contains("collapsed") ? "▸" : "▾";
+        const nowCollapsed = li.classList.toggle("collapsed");
+        icon.textContent = nowCollapsed ? "▸" : "▾";
+        if (nowCollapsed) state.collapsedDirs.add(node.path);
+        else state.collapsedDirs.delete(node.path);
       });
       li.appendChild(row);
       li.appendChild(renderNodes(node.children));
