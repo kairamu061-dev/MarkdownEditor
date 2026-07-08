@@ -6,7 +6,7 @@
 |----------|------|
 | 検出は正規表現 + syntaxTree による除外判定 | lang-markdown に wikilink 構文がなく、パーサ拡張（lezer）を書くより単純で十分。コード内除外はノード名で判定 |
 | クリックは「整形表示状態のみ」オープン | ソース表示中のクリックは通常のカーソル移動として編集を邪魔しない（Obsidian のライブプレビューと同じ感覚） |
-| editor は onOpen コールバックのみ公開 | editor がヴォールト構造を知らない設計を維持（名前解決は file-explorer 側の openNoteByName） |
+| editor は onOpen コールバックのみ公開 | editor が保管庫構造を知らない設計を維持（名前解決は file-explorer 側の openNoteByName） |
 | 名前解決は「ファイル名一致・深さ優先・最初の 1 件」 | Obsidian の最短パス解決の簡易版。同名ノートが複数ある場合の曖昧さは将来課題 |
 
 ## 発生した問題と対処

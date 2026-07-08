@@ -18,6 +18,7 @@
   - [vault](./file-explorer/vault/overview.md)
   - [tree-view](./file-explorer/tree-view/overview.md)
   - [file-ops](./file-explorer/file-ops/overview.md)
+  - [vault-switch](./file-explorer/vault-switch/overview.md)
 - [settings](./settings/overview.md)
   - [store](./settings/store/overview.md)
   - [vault-restore](./settings/vault-restore/overview.md)

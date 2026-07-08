@@ -16,9 +16,9 @@ src/explorer/
 └── explorer.css   # ツリー・ボタン・ステータスのスタイル
 ```
 
-- explorer が持つ状態: ヴォールト情報（名前・ツリー）、開いているノートの相対パス、保存デバウンスタイマー
+- explorer が持つ状態: 保管庫情報（名前・ツリー）、開いているノートの相対パス、保存デバウンスタイマー
 - main.ts が `mountEditor` の `onDocChanged` を explorer に配線する（editor のコードは不変更）
-- ツリー描画は全再描画方式（ヴォールト規模が小さいうちは十分軽い。仮想化は将来）
+- ツリー描画は全再描画方式（保管庫規模が小さいうちは十分軽い。仮想化は将来）
 - ノード名は `textContent` で挿入する（HTML インジェクション防止）
 
 ## データ構造
@@ -31,7 +31,7 @@ interface VaultInfo { name: string; tree: TreeNode[] }
 // index.ts 内部状態
 interface ExplorerState {
   vault: VaultInfo | null;
-  currentPath: string | null;   // 開いているノートのヴォールト相対パス
+  currentPath: string | null;   // 開いているノートの保管庫相対パス
   saveTimer: number | null;     // デバウンスタイマー ID
   pendingContent: string | null; // 未保存の最新内容
 }

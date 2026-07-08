@@ -25,6 +25,7 @@ src-tauri/src/
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
     pub last_vault: Option<String>,
+    pub recent_vaults: Vec<String>, // 最近開いた保管庫（新しい順・重複なし・最大 10 件）。vault-switch が使用
     pub editor: EditorSettings,
 }
 

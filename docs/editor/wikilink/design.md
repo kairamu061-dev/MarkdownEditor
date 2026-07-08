@@ -20,7 +20,7 @@ src/editor/wikilink.ts   # wikilink(onOpen): Extension
 - 選択が重なるとき: 内側に `cm-wikilink` クラスのみ（括弧は見える）
 - `EditorView.domEventHandlers` の mousedown で `.cm-wikilink-rendered` を検出したら
   `onOpen(name)` を呼び、デフォルトのカーソル移動を抑止
-- editor はヴォールトを知らない。名前解決は main.ts が配線する file-explorer 側の
+- editor は保管庫を知らない。名前解決は main.ts が配線する file-explorer 側の
   `openNoteByName(name)`（tree-view に追加）が担う
 
 ## データ構造

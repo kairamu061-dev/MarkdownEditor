@@ -23,7 +23,7 @@ src/explorer/
 ```typescript
 // file-ops.ts 内部
 interface MenuTarget {
-  path: string;      // 対象ノートのヴォールト相対パス
+  path: string;      // 対象ノートの保管庫相対パス
   row: HTMLElement;  // 対象の行要素（インライン入力の差し替え先）
 }
 ```

@@ -3,7 +3,7 @@
 サブ項目に分割済み。設計の詳細は各サブ項目を参照。
 
 - [store](./store/design.md) — settings.json の読み書き基盤（Rust）
-- [vault-restore](./vault-restore/design.md) — ヴォールトの記憶と起動時復元
+- [vault-restore](./vault-restore/design.md) — 保管庫の記憶と起動時復元
 - [ui](./ui/design.md) — 設定モーダルとフォント反映
 
 ## 横断事項

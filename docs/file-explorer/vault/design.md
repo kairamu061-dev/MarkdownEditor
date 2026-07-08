@@ -12,10 +12,10 @@
 ```
 src-tauri/src/
 ├── lib.rs      # Builder 構成にコマンド登録・State 管理を追加
-└── vault.rs    # ヴォールト状態・パス検証・全コマンド・ユニットテスト
+└── vault.rs    # 保管庫状態・パス検証・全コマンド・ユニットテスト
 ```
 
-- ヴォールトルートは `tauri::State<Mutex<Option<PathBuf>>>` で保持
+- 保管庫ルートは `tauri::State<Mutex<Option<PathBuf>>>` で保持
 - パス検証は純関数 `resolve_in_vault(root, rel_path) -> Result<PathBuf>` に切り出してユニットテスト
 - ツリー構築は再帰下降。`.` 始まりを除外し、フォルダ先行・名前昇順でソート
 
@@ -26,7 +26,7 @@ src-tauri/src/
 #[serde(rename_all = "camelCase")]
 struct TreeNode {
     name: String,
-    path: String,      // ヴォールト相対（区切りは '/'）
+    path: String,      // 保管庫相対（区切りは '/'）
     is_dir: bool,
     children: Vec<TreeNode>,
 }
@@ -34,7 +34,7 @@ struct TreeNode {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct VaultInfo {
-    name: String,          // ヴォールトのフォルダ名
+    name: String,          // 保管庫のフォルダ名
     tree: Vec<TreeNode>,
 }
 ```

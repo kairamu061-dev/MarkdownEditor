@@ -13,7 +13,7 @@
 
 ```json
 {
-  "lastVault": "C:\\Users\\me\\notes",   // 省略可。前回開いたヴォールトの絶対パス
+  "lastVault": "C:\\Users\\me\\notes",   // 省略可。前回開いた保管庫の絶対パス
   "editor": {
     "fontFamily": "Meiryo",              // 省略可。空・省略はシステムフォント
     "fontSize": 16                        // 省略可。省略時 14

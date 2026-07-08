@@ -4,7 +4,7 @@
 
 | 判断内容 | 理由 |
 |----------|------|
-| 保存は save_editor_settings（部分更新）を使用 | 起動時に取得した Settings をそのまま save_settings すると、セッション中に開いた別ヴォールトの lastVault を古い値で上書きする競合があるため。Rust 側でファイルを読み直して editor のみ差し替える |
+| 保存は save_editor_settings（部分更新）を使用 | 起動時に取得した Settings をそのまま save_settings すると、セッション中に開いた別保管庫の lastVault を古い値で上書きする競合があるため。Rust 側でファイルを読み直して editor のみ差し替える |
 | フォント適用は CSS カスタムプロパティ | editor/core の theme.ts を「変数参照 + フォールバック」の 1 箇所変更に留められる（core の再ビルド的変更なし） |
 | fontSize がデフォルト値（14）のときは null で保存 | settings.json を最小に保ち、将来デフォルトを変えたときに追随できる |
 | ヘッダ内ボタンの並び順は flexbox の order で固定 | ⚙ と [+] は別モジュールが DOM 挿入するため、挿入順に依存すると並びが不安定になる |
