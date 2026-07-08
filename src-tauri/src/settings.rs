@@ -8,6 +8,9 @@ use tauri::Manager;
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
     pub last_vault: Option<String>,
+    /// 最近開いた保管庫のパス（新しい順・重複なし）。保管庫切り替えの一覧に使う
+    #[serde(default)]
+    pub recent_vaults: Vec<String>,
     pub editor: EditorSettings,
 }
 
@@ -89,6 +92,7 @@ mod tests {
         let path = temp_file("roundtrip.json");
         let settings = Settings {
             last_vault: Some("/home/user/notes".into()),
+            recent_vaults: vec!["/home/user/notes".into(), "/home/user/work".into()],
             editor: EditorSettings {
                 font_family: Some("Meiryo".into()),
                 font_size: Some(16),

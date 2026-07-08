@@ -7,6 +7,7 @@ export interface EditorSettings {
 
 export interface Settings {
   lastVault: string | null;
+  recentVaults: string[];
   editor: EditorSettings;
 }
 

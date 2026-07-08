@@ -12,7 +12,7 @@ pub struct VaultState(pub Mutex<Option<PathBuf>>);
 #[serde(rename_all = "camelCase")]
 pub struct TreeNode {
     name: String,
-    /// ヴォールト相対パス（区切りは '/'）
+    /// 保管庫相対パス（区切りは '/'）
     path: String,
     is_dir: bool,
     children: Vec<TreeNode>,
@@ -25,7 +25,7 @@ pub struct VaultInfo {
     tree: Vec<TreeNode>,
 }
 
-/// 相対パスをヴォールトルート配下に解決する。`..`・絶対パスは拒否する
+/// 相対パスを保管庫ルート配下に解決する。`..`・絶対パスは拒否する
 fn resolve_in_vault(root: &Path, rel: &str) -> Result<PathBuf, String> {
     let rel_path = Path::new(rel);
     if rel_path.is_absolute() {
@@ -40,6 +40,21 @@ fn resolve_in_vault(root: &Path, rel: &str) -> Result<PathBuf, String> {
         }
     }
     Ok(out)
+}
+
+/// 移動先の絶対パスを計算し、フォルダを自身の子孫へ移す不正な移動を弾く。
+/// 副作用のない純粋関数（テスト用に分離）
+fn move_destination(
+    from_path: &Path,
+    from_is_dir: bool,
+    dest_dir: &Path,
+) -> Result<PathBuf, String> {
+    let name = from_path.file_name().ok_or("invalid source")?;
+    let dest = dest_dir.join(name);
+    if from_is_dir && dest.starts_with(from_path) {
+        return Err("cannot move a folder into itself".into());
+    }
+    Ok(dest)
 }
 
 fn ensure_md(path: &Path) -> Result<(), String> {
@@ -105,11 +120,19 @@ fn set_root(state: &State<'_, VaultState>, root: PathBuf) {
     *state.0.lock().unwrap() = Some(root);
 }
 
-/// lastVault を更新する。失敗してもオープン処理はブロックしない
+/// 最近開いた保管庫として記録する数の上限
+const MAX_RECENT_VAULTS: usize = 10;
+
+/// lastVault と recentVaults を更新する。失敗してもオープン処理はブロックしない
 fn remember_vault(app: &tauri::AppHandle, root: &Path) {
     let result = crate::settings::settings_path(app).and_then(|path| {
         let mut settings = crate::settings::load(&path);
-        settings.last_vault = Some(root.to_string_lossy().into_owned());
+        let root_str = root.to_string_lossy().into_owned();
+        settings.last_vault = Some(root_str.clone());
+        // 新しい順・重複なしで先頭に積み、上限で切り詰める
+        settings.recent_vaults.retain(|v| v != &root_str);
+        settings.recent_vaults.insert(0, root_str);
+        settings.recent_vaults.truncate(MAX_RECENT_VAULTS);
         crate::settings::save(&path, &settings)
     });
     if let Err(e) = result {
@@ -130,6 +153,23 @@ pub async fn pick_vault(
     remember_vault(&app, &root);
     set_root(&state, root);
     Ok(Some(info))
+}
+
+/// 指定パスの保管庫を開く（最近の保管庫一覧からの切り替え用）
+#[tauri::command]
+pub fn open_vault(
+    app: tauri::AppHandle,
+    state: State<'_, VaultState>,
+    path: String,
+) -> Result<VaultInfo, String> {
+    let root = PathBuf::from(&path);
+    if !root.is_dir() {
+        return Err("vault folder not found".into());
+    }
+    let info = vault_info(&root)?;
+    remember_vault(&app, &root);
+    set_root(&state, root);
+    Ok(info)
 }
 
 #[tauri::command]
@@ -193,6 +233,16 @@ pub fn create_note(state: State<'_, VaultState>, rel_path: String) -> Result<(),
 }
 
 #[tauri::command]
+pub fn create_folder(state: State<'_, VaultState>, rel_path: String) -> Result<(), String> {
+    let path = resolve_in_vault(&current_root(&state)?, &rel_path)?;
+    if path.exists() {
+        return Err("already exists".into());
+    }
+    fs::create_dir(&path).map_err(|e| e.to_string())
+}
+
+/// ノート（.md）またはフォルダのリネーム。同じ親ディレクトリ内での改名を想定
+#[tauri::command]
 pub fn rename_path(
     state: State<'_, VaultState>,
     from: String,
@@ -201,18 +251,61 @@ pub fn rename_path(
     let root = current_root(&state)?;
     let from_path = resolve_in_vault(&root, &from)?;
     let to_path = resolve_in_vault(&root, &to)?;
-    ensure_md(&from_path)?;
-    ensure_md(&to_path)?;
+    if !from_path.exists() {
+        return Err("not found".into());
+    }
+    // ファイルは .md のみ許可。フォルダは拡張子を問わない
+    if from_path.is_file() {
+        ensure_md(&from_path)?;
+        ensure_md(&to_path)?;
+    }
     if to_path.exists() {
         return Err("already exists".into());
     }
     fs::rename(&from_path, &to_path).map_err(|e| e.to_string())
 }
 
+/// ノートまたはフォルダを別フォルダ配下へ移動する（ドラッグ&ドロップ用）。
+/// `to_dir` は移動先フォルダの相対パス（空文字はルート）
+#[tauri::command]
+pub fn move_path(
+    state: State<'_, VaultState>,
+    from: String,
+    to_dir: String,
+) -> Result<(), String> {
+    let root = current_root(&state)?;
+    let from_path = resolve_in_vault(&root, &from)?;
+    if !from_path.exists() {
+        return Err("not found".into());
+    }
+    let dest_dir = if to_dir.is_empty() {
+        root.clone()
+    } else {
+        let d = resolve_in_vault(&root, &to_dir)?;
+        if !d.is_dir() {
+            return Err("destination is not a folder".into());
+        }
+        d
+    };
+    let dest = move_destination(&from_path, from_path.is_dir(), &dest_dir)?;
+    if dest == from_path {
+        return Ok(()); // 同じ場所へのドロップは何もしない
+    }
+    if dest.exists() {
+        return Err("already exists".into());
+    }
+    fs::rename(&from_path, &dest).map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 pub fn delete_path(state: State<'_, VaultState>, rel_path: String) -> Result<(), String> {
     let path = resolve_in_vault(&current_root(&state)?, &rel_path)?;
-    ensure_md(&path)?;
+    if !path.exists() {
+        return Err("not found".into());
+    }
+    if path.is_file() {
+        ensure_md(&path)?;
+    }
     trash::delete(&path).map_err(|e| e.to_string())
 }
 
@@ -246,6 +339,35 @@ mod tests {
         assert!(ensure_md(Path::new("note.MD")).is_ok());
         assert!(ensure_md(Path::new("note.txt")).is_err());
         assert!(ensure_md(Path::new("folder")).is_err());
+    }
+
+    #[test]
+    fn move_destination_joins_basename_into_target_dir() {
+        // ノートを別フォルダへ移動: from の basename が移動先フォルダ配下に付く
+        let from = Path::new("/vault/a/note.md");
+        let dest_dir = Path::new("/vault/b");
+        assert_eq!(
+            move_destination(from, false, dest_dir).unwrap(),
+            PathBuf::from("/vault/b/note.md")
+        );
+    }
+
+    #[test]
+    fn move_destination_rejects_folder_into_own_subtree() {
+        // フォルダ a を a/b 配下へ移動しようとすると弾く
+        let from = Path::new("/vault/a");
+        let dest_dir = Path::new("/vault/a/b");
+        assert!(move_destination(from, true, dest_dir).is_err());
+    }
+
+    #[test]
+    fn move_destination_allows_folder_into_sibling() {
+        let from = Path::new("/vault/a");
+        let dest_dir = Path::new("/vault/c");
+        assert_eq!(
+            move_destination(from, true, dest_dir).unwrap(),
+            PathBuf::from("/vault/c/a")
+        );
     }
 
     #[test]

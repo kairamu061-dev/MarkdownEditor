@@ -1,4 +1,4 @@
-import { createNote, deletePath, renamePath } from "./api";
+import { createFolder, createNote, deletePath, renamePath } from "./api";
 import {
   getCurrentPath,
   openNote,
@@ -8,7 +8,8 @@ import {
   showStatus,
 } from "./index";
 
-const UNTITLED_BASE = "無題のノート";
+const UNTITLED_NOTE = "無題のノート";
+const UNTITLED_FOLDER = "新規フォルダ";
 const MAX_UNTITLED = 100;
 
 let menu: HTMLElement | null = null;
@@ -18,15 +19,25 @@ function closeMenu(): void {
   menu = null;
 }
 
-// --- 新規ノート ---
+function parentDir(path: string): string {
+  return path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
+}
 
-async function newNote(): Promise<void> {
+function join(dir: string, name: string): string {
+  return dir ? `${dir}/${name}` : name;
+}
+
+// --- 新規作成（ノート / フォルダ） ---
+
+/** dir 配下（"" はルート）に連番付きの一意名で新規ノートを作り、開く */
+async function newNote(dir: string): Promise<void> {
   for (let n = 1; n <= MAX_UNTITLED; n++) {
-    const name = n === 1 ? `${UNTITLED_BASE}.md` : `${UNTITLED_BASE} ${n}.md`;
+    const name = n === 1 ? `${UNTITLED_NOTE}.md` : `${UNTITLED_NOTE} ${n}.md`;
+    const rel = join(dir, name);
     try {
-      await createNote(name);
+      await createNote(rel);
       await refreshTree();
-      await openNote(name);
+      await openNote(rel);
       return;
     } catch (e) {
       if (String(e).includes("already exists")) continue;
@@ -38,11 +49,32 @@ async function newNote(): Promise<void> {
   showStatus("操作に失敗しました");
 }
 
-// --- リネーム ---
+/** dir 配下（"" はルート）に連番付きの一意名で新規フォルダを作る */
+async function newFolder(dir: string): Promise<void> {
+  for (let n = 1; n <= MAX_UNTITLED; n++) {
+    const name = n === 1 ? UNTITLED_FOLDER : `${UNTITLED_FOLDER} ${n}`;
+    const rel = join(dir, name);
+    try {
+      await createFolder(rel);
+      await refreshTree();
+      return;
+    } catch (e) {
+      if (String(e).includes("already exists")) continue;
+      console.error("create_folder failed:", e);
+      showStatus("操作に失敗しました");
+      return;
+    }
+  }
+  showStatus("操作に失敗しました");
+}
 
-function startRename(path: string, row: HTMLElement): void {
+// --- リネーム（ノート / フォルダ） ---
+
+function startRename(path: string, isDir: boolean, row: HTMLElement): void {
   const dir = path.includes("/") ? path.slice(0, path.lastIndexOf("/") + 1) : "";
-  const baseName = path.slice(dir.length).replace(/\.md$/i, "");
+  const baseName = isDir
+    ? path.slice(dir.length)
+    : path.slice(dir.length).replace(/\.md$/i, "");
 
   const input = document.createElement("input");
   input.className = "rename-input";
@@ -65,15 +97,15 @@ function startRename(path: string, row: HTMLElement): void {
       cancel();
       return;
     }
-    const to = `${dir}${name}.md`;
+    const to = isDir ? `${dir}${name}` : `${dir}${name}.md`;
     try {
       await renamePath(path, to);
       finished = true;
-      if (getCurrentPath() === path) setCurrentPath(to);
+      if (!isDir && getCurrentPath() === path) setCurrentPath(to);
       await refreshTree();
     } catch (e) {
       if (String(e).includes("already exists")) {
-        showStatus("同名のファイルがあります");
+        showStatus("同名の項目があります");
       } else {
         console.error("rename_path failed:", e);
         showStatus("操作に失敗しました");
@@ -90,12 +122,16 @@ function startRename(path: string, row: HTMLElement): void {
   input.addEventListener("blur", cancel);
 }
 
-// --- 削除（二段階確認） ---
+// --- 削除（二段階確認・ノート / フォルダ） ---
 
 async function doDelete(path: string): Promise<void> {
   try {
     await deletePath(path);
-    if (getCurrentPath() === path) setCurrentPath(null);
+    // 開いているノートが削除対象（またはその配下）ならスクラッチに戻す
+    const current = getCurrentPath();
+    if (current !== null && (current === path || current.startsWith(`${path}/`))) {
+      setCurrentPath(null);
+    }
     await refreshTree();
   } catch (e) {
     console.error("delete_path failed:", e);
@@ -105,37 +141,59 @@ async function doDelete(path: string): Promise<void> {
 
 // --- コンテキストメニュー ---
 
-function showMenu(e: MouseEvent, path: string, row: HTMLElement): void {
+function addItem(label: string, onClick: () => void): HTMLButtonElement {
+  const item = document.createElement("button");
+  item.className = "context-menu-item";
+  item.textContent = label;
+  item.addEventListener("click", onClick);
+  return item;
+}
+
+function showMenu(e: MouseEvent, path: string, isDir: boolean, row: HTMLElement): void {
   e.preventDefault();
   closeMenu();
 
   menu = document.createElement("div");
   menu.className = "context-menu";
 
-  const rename = document.createElement("button");
-  rename.className = "context-menu-item";
-  rename.textContent = "リネーム";
-  rename.addEventListener("click", () => {
-    closeMenu();
-    startRename(path, row);
-  });
+  // 作成先: フォルダ上ならその中、ノート上なら同じ親、空白部ならルート
+  const targetDir = isDir ? path : parentDir(path);
+  menu.append(
+    addItem("新規ノート", () => {
+      closeMenu();
+      void newNote(targetDir);
+    }),
+    addItem("新規フォルダ", () => {
+      closeMenu();
+      void newFolder(targetDir);
+    }),
+  );
 
-  const del = document.createElement("button");
-  del.className = "context-menu-item";
-  del.textContent = "削除";
-  let confirming = false;
-  del.addEventListener("click", () => {
-    if (!confirming) {
-      confirming = true;
-      del.textContent = "本当に削除する";
-      del.classList.add("danger");
-      return;
-    }
-    closeMenu();
-    void doDelete(path);
-  });
+  // ルート（path === ""）にはリネーム/削除を出さない
+  if (path !== "") {
+    const rename = addItem("リネーム", () => {
+      closeMenu();
+      startRename(path, isDir, row);
+    });
 
-  menu.append(rename, del);
+    const del = document.createElement("button");
+    del.className = "context-menu-item";
+    del.textContent = "削除";
+    let confirming = false;
+    del.addEventListener("click", () => {
+      if (!confirming) {
+        confirming = true;
+        del.textContent = isDir ? "フォルダごと削除する" : "本当に削除する";
+        del.classList.add("danger");
+        return;
+      }
+      closeMenu();
+      void doDelete(path);
+    });
+
+    menu.append(rename, del);
+  }
+
   document.body.appendChild(menu);
 
   // 画面外にはみ出さない位置に表示
@@ -152,7 +210,7 @@ export function initFileOps(): void {
     add.className = "sidebar-add-button";
     add.title = "新規ノート";
     add.textContent = "+";
-    add.addEventListener("click", () => void newNote());
+    add.addEventListener("click", () => void newNote(""));
     header.appendChild(add);
   }
 

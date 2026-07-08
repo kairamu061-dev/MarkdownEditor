@@ -1,4 +1,4 @@
-/* --- ヴォールト未オープン --- */
+/* --- 保管庫未オープン --- */
 .vault-empty {
   display: flex;
   justify-content: center;
@@ -24,16 +24,23 @@
 .tree {
   padding: 8px 4px;
   font-size: 13px;
+  min-height: 80px; /* 空白部へのドロップ/右クリックを受けられるよう最低高さを確保 */
 }
 
 .tree ul {
   list-style: none;
   margin: 0;
-  padding-left: 14px;
+  padding-left: 16px; /* 階層ごとのインデント */
 }
 
 .tree > ul {
   padding-left: 0;
+}
+
+/* ネストした階層に薄いガイド線を引き、階層を見やすくする */
+.tree li > ul {
+  margin-left: 8px;
+  border-left: 1px solid var(--border);
 }
 
 .tree-row {
@@ -43,9 +50,12 @@
   padding: 3px 8px;
   border-radius: 4px;
   cursor: pointer;
-  white-space: nowrap;
+}
+
+.tree-label {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tree-row:hover {
@@ -57,15 +67,120 @@
   color: var(--text-strong);
 }
 
-.tree-folder-icon {
+/* 開閉マーク（フォルダのみ・左側）。ノートでは空のスペーサとして幅を合わせる */
+.tree-chevron {
   flex: 0 0 auto;
   width: 12px;
-  color: var(--border);
+  text-align: center;
+  color: var(--accent);
   font-size: 10px;
+  user-select: none;
+}
+
+/* フォルダとノートの見た目を差別化: フォルダは強調色＋太字 */
+.tree-row.is-dir .tree-label {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+
+.tree-row.is-file .tree-label {
+  color: var(--text);
 }
 
 .tree-item.collapsed > ul {
   display: none;
+}
+
+/* ドラッグ&ドロップの移動先ハイライト */
+.tree-row.drop-target {
+  background-color: var(--bg-hover);
+  outline: 1px dashed var(--accent);
+  outline-offset: -1px;
+}
+
+.tree.drop-target {
+  outline: 1px dashed var(--accent);
+  outline-offset: -4px;
+  border-radius: 4px;
+}
+
+/* --- 保管庫スイッチャ（Obsidian 風プルダウン） --- */
+.sidebar-title.vault-switcher {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.vault-switcher-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-strong);
+  font-size: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.vault-switcher-button:hover {
+  background-color: var(--bg-hover);
+}
+
+.vault-switcher-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vault-switcher-caret {
+  flex: 0 0 auto;
+  color: var(--border);
+  font-size: 11px;
+}
+
+.vault-switcher-menu {
+  position: fixed;
+  z-index: 100;
+  max-height: 60vh;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-hover);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
+}
+
+.vault-switcher-item {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vault-switcher-item:hover {
+  background-color: var(--border);
+  color: var(--text-strong);
+}
+
+.vault-switcher-item.current {
+  color: var(--accent);
+}
+
+.vault-switcher-sep {
+  height: 1px;
+  margin: 4px 2px;
+  background-color: var(--border);
 }
 
 /* --- 新規ノートボタン --- */

@@ -11,12 +11,15 @@ pub fn run() {
         .manage(VaultState(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
             vault::pick_vault,
+            vault::open_vault,
             vault::initial_vault,
             vault::list_tree,
             vault::read_note,
             vault::write_note,
             vault::create_note,
+            vault::create_folder,
             vault::rename_path,
+            vault::move_path,
             vault::delete_path,
             settings::get_settings,
             settings::save_settings,
