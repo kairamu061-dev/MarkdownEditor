@@ -294,8 +294,24 @@ function renderTree(): void {
     container.textContent = "";
     const treeEl = document.createElement("div");
     treeEl.className = "tree";
-    // ツリー空白部はルート（""）へのドロップ先・右クリックメニュー対象
-    makeDropTarget(treeEl, "");
+    // ツリー空白部（行の外）だけをルート（""）へのドロップ先・右クリック対象にする。
+    // 行の上ではフォルダ行側のハンドラに委ねる（二重ハイライトを避ける）
+    treeEl.addEventListener("dragover", (e) => {
+      if (e.target !== treeEl || !canDrop("")) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      treeEl.classList.add("drop-target");
+    });
+    treeEl.addEventListener("dragleave", (e) => {
+      if (e.target === treeEl) treeEl.classList.remove("drop-target");
+    });
+    treeEl.addEventListener("drop", (e) => {
+      treeEl.classList.remove("drop-target");
+      if (e.target !== treeEl || !canDrop("")) return;
+      e.preventDefault();
+      const from = state.dragPath;
+      if (from !== null) void doMove(from, "");
+    });
     treeEl.addEventListener("contextmenu", (e) => {
       if (e.target === treeEl) contextMenuHandler?.(e, "", true, treeEl);
     });
