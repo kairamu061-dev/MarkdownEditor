@@ -10,6 +10,9 @@
 - [x] 2 ペインレイアウトの HTML/CSS 実装
 - [x] サイドバー開閉トグル（ボタン + Ctrl+B）の実装
 - [x] Linux 上での `tauri dev` 起動確認と `tauri build` 通過確認
+- [x] フレームレス化（decorations:false）＋自作タイトルバー（☰・タイトル・ドラッグ領域・最小化/最大化/閉じる）
+- [x] capabilities に window 操作・start-dragging 権限を追加、titlebar.ts で配線
+- [ ] Windows 実機でのタイトルバー操作・端リサイズ確認
 
 ## 依存関係
 
