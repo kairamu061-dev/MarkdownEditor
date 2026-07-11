@@ -5,12 +5,13 @@ import {
   dropCursor,
   highlightSpecialChars,
 } from "@codemirror/view";
-import { EditorState, type Extension } from "@codemirror/state";
+import { EditorState, Prec, type Extension } from "@codemirror/state";
 import {
   defaultKeymap,
   history,
   historyKeymap,
   indentWithTab,
+  redo,
 } from "@codemirror/commands";
 import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
@@ -50,6 +51,14 @@ export function mountEditor(
     markdown({ base: markdownLanguage, codeLanguages: languages }),
     syntaxHighlighting(nordHighlightStyle),
     nordTheme,
+    // redo を Ctrl+Y と Ctrl+Shift+Z の両方へ明示バインド（BUG-006）。
+    // 既定の historyKeymap は Windows で redo を Ctrl+Y のみに割り当てるため補う
+    Prec.highest(
+      keymap.of([
+        { key: "Mod-y", run: redo, preventDefault: true },
+        { key: "Mod-Shift-z", run: redo, preventDefault: true },
+      ]),
+    ),
     keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
     ...extraExtensions,
   ];
