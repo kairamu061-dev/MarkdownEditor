@@ -410,19 +410,19 @@ async function openSwitcher(anchor: HTMLElement): Promise<void> {
   });
   menu.appendChild(openOther);
 
+  // フッタがアンカーなので上方向に展開する
   const rect = anchor.getBoundingClientRect();
   menu.style.left = `${rect.left}px`;
-  menu.style.top = `${rect.bottom + 2}px`;
+  menu.style.bottom = `${window.innerHeight - rect.top + 2}px`;
   menu.style.minWidth = `${rect.width}px`;
   switcherMenu = menu;
   document.body.appendChild(menu);
 }
 
 function renderVaultSwitcher(name: string): void {
-  const title = document.querySelector<HTMLElement>(".sidebar-title");
-  if (!title) return;
-  title.textContent = "";
-  title.classList.add("vault-switcher");
+  const footer = document.getElementById("sidebar-footer");
+  if (!footer) return;
+  footer.textContent = "";
 
   const button = document.createElement("button");
   button.className = "vault-switcher-button";
@@ -434,7 +434,7 @@ function renderVaultSwitcher(name: string): void {
 
   const caret = document.createElement("span");
   caret.className = "vault-switcher-caret";
-  caret.textContent = "⌄";
+  caret.textContent = "⌃"; // メニューは上方向に開く
 
   button.append(label, caret);
   button.addEventListener("click", (e) => {
@@ -442,7 +442,7 @@ function renderVaultSwitcher(name: string): void {
     if (switcherMenu) closeSwitcher();
     else void openSwitcher(button);
   });
-  title.appendChild(button);
+  footer.appendChild(button);
 }
 
 // --- 初期化 ---

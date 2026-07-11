@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(winget *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(npm run *)",
+      "Bash(seq 1 900)",
+      "Bash(tasklist //FI \"IMAGENAME eq markdown-editor.exe\")",
+      "Bash(tail -20 \"C:/Users/81806/AppData/Local/Temp/claude/D--AI-Antigravity-MarkdownEditor/aa3ac2aa-4e06-4865-aa2d-8b90c2369488/scratchpad/build.log\")",
+      "Bash(cat \"C:/Users/81806/AppData/Roaming/dev.kairamu061.markdowneditor/settings.json\")",
+      "PowerShell(Shot tree-now *)"
+    ]
+  }
+}

@@ -31,7 +31,7 @@
 .tree ul {
   list-style: none;
   margin: 0;
-  padding-left: 16px; /* 階層ごとのインデント */
+  padding-left: 8px; /* 階層ごとのインデント（2026-07-11 フィードバックで半分に縮小） */
 }
 
 .tree > ul {
@@ -40,7 +40,7 @@
 
 /* ネストした階層に薄いガイド線を引き、階層を見やすくする */
 .tree li > ul {
-  margin-left: 8px;
+  margin-left: 4px;
   border-left: 1px solid var(--border);
 }
 
@@ -68,13 +68,14 @@
   color: var(--text-strong);
 }
 
-/* 開閉マーク（フォルダのみ・左側）。ノートでは空のスペーサとして幅を合わせる */
+/* 開閉マーク（フォルダのみ・左側）。ノートでは空のスペーサとして幅を合わせる
+   （2026-07-11 フィードバックで拡大） */
 .tree-chevron {
   flex: 0 0 auto;
-  width: 12px;
+  width: 16px;
   text-align: center;
   color: var(--accent);
-  font-size: 10px;
+  font-size: 14px;
   user-select: none;
 }
 
@@ -105,25 +106,21 @@
   border-radius: 4px;
 }
 
-/* --- 保管庫スイッチャ（Obsidian 風プルダウン） --- */
-.sidebar-title.vault-switcher {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-weight: 600;
-}
-
+/* --- 保管庫スイッチャ（Obsidian 風。サイドバー下部フッタに配置） --- */
 .vault-switcher-button {
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: 4px;
   max-width: 100%;
-  padding: 2px 4px;
+  padding: 4px 6px;
   border: none;
   border-radius: 4px;
   background: transparent;
   color: var(--text-strong);
-  font-size: inherit;
-  font-weight: inherit;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }
 

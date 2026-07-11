@@ -11,7 +11,8 @@
 ## アーキテクチャ
 
 - フロント（`src/explorer/index.ts`）
-  - `renderVaultSwitcher(name)`: ヘッダの `.sidebar-title` を保管庫名ボタン（＋キャレット）に置換
+  - `renderVaultSwitcher(name)`: サイドバー下部の `#sidebar-footer`（index.html に追加）へ
+    保管庫名ボタン（＋キャレット）を描画。メニューはフッタの上へ上方向に展開
   - `openSwitcher(anchor)`: `getSettings()` で `recentVaults` / `lastVault` を取得し、プルダウンを生成
   - `switchToVault(path)` / `openVaultByDialog()`: `open_vault` / `pick_vault` を呼び `applyVault` へ
   - `applyVault(info)`: 保管庫切り替えの共通処理（currentPath・collapsedDirs をリセットし、エディタを空に）
