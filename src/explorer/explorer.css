@@ -24,7 +24,8 @@
 .tree {
   padding: 8px 4px;
   font-size: 13px;
-  min-height: 80px; /* 空白部へのドロップ/右クリックを受けられるよう最低高さを確保 */
+  /* サイドバーの余白全体で空白部ドロップ/右クリックを受ける（BUG-004） */
+  min-height: 100%;
 }
 
 .tree ul {

@@ -165,8 +165,9 @@ function parentDir(path: string): string {
   return path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
 }
 
+/** 保管庫相対パス（/ 区切り）と OS 絶対パス（Windows は \ 区切り）の両方に対応（BUG-003） */
 function basename(path: string): string {
-  return path.includes("/") ? path.slice(path.lastIndexOf("/") + 1) : path;
+  return path.split(/[\\/]/).filter(Boolean).pop() ?? path;
 }
 
 /** ドラッグ中の項目を toDir（"" はルート）へドロップ可能か */
@@ -454,6 +455,12 @@ export function initExplorer(el: HTMLElement, editorHandle: EditorHandle): void 
   container = el;
   editor = editorHandle;
   container.style.position = "relative";
+
+  // サイドバー内では WebView2 の既定コンテキストメニューを出さない（BUG-004）。
+  // アプリ独自メニューの表示はバブリング中の各ハンドラが担う
+  document
+    .getElementById("sidebar")
+    ?.addEventListener("contextmenu", (e) => e.preventDefault());
 
   window.addEventListener("keydown", (e) => {
     if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "s") {
