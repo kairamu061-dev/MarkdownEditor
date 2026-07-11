@@ -422,7 +422,8 @@ async function openSwitcher(anchor: HTMLElement): Promise<void> {
 function renderVaultSwitcher(name: string): void {
   const footer = document.getElementById("sidebar-footer");
   if (!footer) return;
-  footer.textContent = "";
+  // フッタには設定ボタン（⚙）も同居するため、スイッチャ部分だけ差し替える
+  footer.querySelector(".vault-switcher-button")?.remove();
 
   const button = document.createElement("button");
   button.className = "vault-switcher-button";
@@ -442,7 +443,8 @@ function renderVaultSwitcher(name: string): void {
     if (switcherMenu) closeSwitcher();
     else void openSwitcher(button);
   });
-  footer.appendChild(button);
+  // スイッチャは先頭、⚙ は右端に来るよう先頭へ差し込む
+  footer.insertBefore(button, footer.firstChild);
 }
 
 // --- 初期化 ---

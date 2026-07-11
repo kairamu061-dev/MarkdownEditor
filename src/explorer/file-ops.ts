@@ -204,16 +204,7 @@ function showMenu(e: MouseEvent, path: string, isDir: boolean, row: HTMLElement)
 }
 
 export function initFileOps(): void {
-  const header = document.querySelector<HTMLElement>(".sidebar-header");
-  if (header) {
-    const add = document.createElement("button");
-    add.className = "sidebar-add-button";
-    add.title = "新規ノート";
-    add.textContent = "+";
-    add.addEventListener("click", () => void newNote(""));
-    header.appendChild(add);
-  }
-
+  // 新規作成は右クリックのコンテキストメニューから行う（ヘッダの [+] は廃止）
   setContextMenuHandler(showMenu);
 
   window.addEventListener("mousedown", (e) => {

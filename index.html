@@ -11,24 +11,30 @@
     <script type="module" src="/src/main.ts" defer></script>
   </head>
   <body>
-    <div id="app">
+    <div id="titlebar" class="titlebar" data-tauri-drag-region>
       <button
         id="sidebar-toggle"
-        class="sidebar-toggle"
+        class="titlebar-toggle"
         title="サイドバーを開閉 (Ctrl+B)"
         aria-expanded="true"
       >
         ☰
       </button>
+      <span class="titlebar-title" data-tauri-drag-region>MarkdownEditor</span>
+      <div class="titlebar-drag" data-tauri-drag-region></div>
+      <div class="window-controls">
+        <button id="win-minimize" class="window-control" title="最小化" aria-label="最小化">─</button>
+        <button id="win-maximize" class="window-control" title="最大化" aria-label="最大化">▢</button>
+        <button id="win-close" class="window-control window-close" title="閉じる" aria-label="閉じる">✕</button>
+      </div>
+    </div>
+    <div id="app">
       <aside id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-          <span class="sidebar-title">ファイル</span>
-        </div>
         <div id="sidebar-content" class="sidebar-content">
           <!-- file-explorer フィーチャーエリアで実装 -->
         </div>
         <div id="sidebar-footer" class="sidebar-footer">
-          <!-- 保管庫スイッチャ（file-explorer/vault-switch）で実装 -->
+          <!-- 保管庫スイッチャ・設定（vault-switch / settings）で実装 -->
         </div>
       </aside>
       <main id="main" class="main">

@@ -77,18 +77,17 @@
   color: var(--accent);
 }
 
-/* ⚙ ボタン（[+] と同スタイル、右端寄せは [+] 側が担う） */
+/* ⚙ ボタン（フッタの右端・保管庫スイッチャの横） */
 .sidebar-gear-button {
-  order: 3; /* [+] の右隣（explorer.css の order 参照） */
-  margin-right: 8px;
-  width: 24px;
-  height: 24px;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: none;
   border-radius: 4px;
   background: transparent;
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
 }
 
