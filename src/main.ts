@@ -1,4 +1,5 @@
 import { initSidebar } from "./shell/sidebar";
+import { initTitlebar } from "./shell/titlebar";
 import { mountEditor } from "./editor";
 import { livePreview } from "./editor/live-preview";
 import { codeBlockStyle } from "./editor/code-block";
@@ -6,6 +7,7 @@ import { wikilink } from "./editor/wikilink";
 import { initExplorer, explorerDocChanged, openNoteByName } from "./explorer";
 import { initSettings } from "./settings";
 
+initTitlebar();
 initSidebar(document.getElementById("app")!);
 initSettings();
 const editor = mountEditor(document.getElementById("main-content")!, {

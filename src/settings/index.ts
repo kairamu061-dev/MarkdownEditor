@@ -107,14 +107,15 @@ function openModal(): void {
 }
 
 export function initSettings(): void {
-  const header = document.querySelector<HTMLElement>(".sidebar-header");
-  if (header) {
+  // 設定ボタンは保管庫スイッチャの横（サイドバー下部フッタの右端）に置く
+  const footer = document.getElementById("sidebar-footer");
+  if (footer) {
     const gear = document.createElement("button");
     gear.className = "sidebar-gear-button";
     gear.title = "設定";
     gear.textContent = "⚙";
     gear.addEventListener("click", openModal);
-    header.appendChild(gear);
+    footer.appendChild(gear);
   }
 
   void getSettings()

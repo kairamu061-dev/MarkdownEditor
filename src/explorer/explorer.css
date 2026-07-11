@@ -69,13 +69,14 @@
 }
 
 /* 開閉マーク（フォルダのみ・左側）。ノートでは空のスペーサとして幅を合わせる
-   （2026-07-11 フィードバックで拡大） */
+   （2026-07-12 フィードバックでさらに拡大: 約 3 倍） */
 .tree-chevron {
   flex: 0 0 auto;
-  width: 16px;
+  width: 24px;
   text-align: center;
   color: var(--accent);
-  font-size: 14px;
+  font-size: 24px;
+  line-height: 1;
   user-select: none;
 }
 
@@ -112,14 +113,15 @@
   align-items: center;
   flex: 1 1 auto;
   min-width: 0;
-  gap: 4px;
+  gap: 6px;
   max-width: 100%;
-  padding: 4px 6px;
+  height: 32px;
+  padding: 4px 10px;
   border: none;
   border-radius: 4px;
   background: transparent;
   color: var(--text-strong);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -179,27 +181,6 @@
   height: 1px;
   margin: 4px 2px;
   background-color: var(--border);
-}
-
-/* --- 新規ノートボタン --- */
-.sidebar-add-button {
-  order: 2; /* ヘッダ内の表示順: タイトル → [+] → ⚙（DOM 挿入順に依存させない） */
-  margin-left: auto;
-  margin-right: 8px;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text);
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.sidebar-add-button:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-strong);
 }
 
 /* --- コンテキストメニュー --- */

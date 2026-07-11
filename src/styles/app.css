@@ -13,19 +13,43 @@ body {
   user-select: none;
 }
 
-#app {
+body {
   display: flex;
-  height: 100vh;
+  flex-direction: column;
 }
 
-/* --- サイドバー開閉トグル（常にウィンドウ左上） --- */
-.sidebar-toggle {
-  position: fixed;
-  top: 6px;
-  left: 8px;
-  z-index: 10;
+#app {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* --- カスタムタイトルバー（フレームレスウィンドウ） --- */
+.titlebar {
+  display: flex;
+  align-items: center;
+  flex: 0 0 32px;
+  padding-left: 6px;
+  background-color: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
+}
+
+.titlebar-title {
+  padding: 0 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 中央の余白全体をドラッグ領域にする */
+.titlebar-drag {
+  flex: 1 1 auto;
+  align-self: stretch;
+}
+
+.titlebar-toggle {
   width: 28px;
-  height: 28px;
+  height: 24px;
   padding: 0;
   border: none;
   border-radius: 4px;
@@ -35,8 +59,36 @@ body {
   cursor: pointer;
 }
 
-.sidebar-toggle:hover {
+.titlebar-toggle:hover {
   background-color: var(--bg-hover);
+  color: var(--text-strong);
+}
+
+/* --- ウィンドウ操作ボタン（最小化 / 最大化 / 閉じる） --- */
+.window-controls {
+  display: flex;
+  align-self: stretch;
+}
+
+.window-control {
+  width: 44px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.window-control:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-strong);
+}
+
+.window-control.window-close:hover {
+  background-color: var(--error);
   color: var(--text-strong);
 }
 
@@ -54,19 +106,6 @@ body {
   display: none;
 }
 
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  height: 40px;
-  padding-left: 44px; /* トグルボタンの分の余白 */
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar-title {
-  color: var(--text-strong);
-  font-weight: 600;
-}
-
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
@@ -75,8 +114,9 @@ body {
 .sidebar-footer {
   display: flex;
   align-items: center;
-  min-height: 34px;
-  padding: 4px 8px;
+  gap: 4px;
+  min-height: 44px;
+  padding: 6px 8px;
   border-top: 1px solid var(--border);
 }
 
