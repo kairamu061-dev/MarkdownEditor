@@ -22,6 +22,7 @@
 | 変更内容 | 理由 |
 |----------|------|
 | index.ts に file-ops 向け公開フック（refreshTree / getCurrentPath / setCurrentPath / setContextMenuHandler）を追加 | file-ops の設計（file-ops/design.md）で必要になった接続点。tree-view 実装と同時に追加したため、file-ops の実装ファイルも tree-view のコミットに含まれている（検証と記録は file-ops 側で実施） |
+| インデントを 1 階層あたり約 24px → 12px に縮小、開閉マークを 10px → 14px に拡大（2026-07-11） | ユーザーフィードバック「インデントが深すぎる（半分に）」「開閉アイコンが小さすぎる」。spec 更新済み |
 
 ## 今後の課題
 
