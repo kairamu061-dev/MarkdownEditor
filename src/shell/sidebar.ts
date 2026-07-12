@@ -14,9 +14,10 @@ export function toggleSidebar(): void {
     ?.setAttribute("aria-expanded", String(state.sidebarVisible));
 }
 
-export function initSidebar(root: HTMLElement): void {
-  root
-    .querySelector<HTMLButtonElement>("#sidebar-toggle")
+export function initSidebar(): void {
+  // ☰ ボタンはタイトルバー側（#app 外）にあるため document から引く（BUG-007）
+  document
+    .getElementById("sidebar-toggle")
     ?.addEventListener("click", toggleSidebar);
 
   window.addEventListener("keydown", (e) => {
