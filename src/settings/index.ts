@@ -8,6 +8,17 @@ const FONT_SIZE_MIN = 10;
 const FONT_SIZE_MAX = 32;
 const FONT_SIZE_DEFAULT = 14;
 
+// Windows 11 標準搭載フォントのプリセット（spec.md の表と同一）。value は CSS font-family 文字列
+const FONT_OPTIONS: ReadonlyArray<{ label: string; value: string | null }> = [
+  { label: "システムフォント", value: null },
+  { label: "游ゴシック", value: '"Yu Gothic", "游ゴシック", sans-serif' },
+  { label: "游明朝", value: '"Yu Mincho", "游明朝", serif' },
+  { label: "メイリオ", value: '"Meiryo", "メイリオ", sans-serif' },
+  { label: "BIZ UDゴシック", value: '"BIZ UDGothic", "BIZ UDゴシック", sans-serif' },
+  { label: "BIZ UD明朝", value: '"BIZ UDMincho", "BIZ UD明朝", serif' },
+  { label: "等幅（Consolas）", value: 'Consolas, "BIZ UDGothic", monospace' },
+];
+
 let currentEditor: EditorSettings = { fontFamily: null, fontSize: null };
 
 function applyEditorSettings(editor: EditorSettings): void {
@@ -48,11 +59,23 @@ function openModal(): void {
   const familyField = document.createElement("label");
   familyField.className = "settings-field";
   familyField.textContent = "フォントファミリー";
-  const familyInput = document.createElement("input");
-  familyInput.type = "text";
-  familyInput.placeholder = "システムフォント";
-  familyInput.value = currentEditor.fontFamily ?? "";
-  familyField.appendChild(familyInput);
+  const familySelect = document.createElement("select");
+  for (const { label, value } of FONT_OPTIONS) {
+    const option = document.createElement("option");
+    option.textContent = label;
+    option.value = value ?? "";
+    familySelect.appendChild(option);
+  }
+  const current = currentEditor.fontFamily;
+  if (current && !FONT_OPTIONS.some((o) => o.value === current)) {
+    // 旧・自由入力で保存された値はプリセット外でも失わない（別の選択肢で保存すると消える）
+    const custom = document.createElement("option");
+    custom.textContent = "カスタム（現在の設定）";
+    custom.value = current;
+    familySelect.appendChild(custom);
+  }
+  familySelect.value = current ?? "";
+  familyField.appendChild(familySelect);
 
   const error = document.createElement("div");
   error.className = "settings-error";
@@ -88,7 +111,7 @@ function openModal(): void {
   save.addEventListener("click", async () => {
     const rawSize = Number(sizeInput.value) || FONT_SIZE_DEFAULT;
     const fontSize = Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, rawSize));
-    const fontFamily = familyInput.value.trim() || null;
+    const fontFamily = familySelect.value || null;
     const editor: EditorSettings = {
       fontSize: fontSize === FONT_SIZE_DEFAULT ? null : fontSize,
       fontFamily,

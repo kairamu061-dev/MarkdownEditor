@@ -32,7 +32,8 @@
   font-size: 13px;
 }
 
-.settings-field input {
+.settings-field input,
+.settings-field select {
   padding: 5px 8px;
   border: 1px solid var(--border);
   border-radius: 3px;
@@ -42,7 +43,8 @@
   outline: none;
 }
 
-.settings-field input:focus {
+.settings-field input:focus,
+.settings-field select:focus {
   border-color: var(--accent);
 }
 
