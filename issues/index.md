@@ -17,7 +17,7 @@
 |----|---------|------|---------|
 | [BUG-001](./tickets/BUG-001.md) | add-feature.sh が CRLF 改行のため Linux で実行不能 | tooling | Fixed |
 | [BUG-002](./tickets/BUG-002.md) | ノートを開くと畳んでいたフォルダがすべて開いてしまう | tree-view | Fixed |
-| [BUG-003](./tickets/BUG-003.md) | 保管庫スイッチャの一覧がフォルダ名でなくフルパス表示 | vault-switch | Fixed |
-| [BUG-004](./tickets/BUG-004.md) | ツリー空白部の右クリックで WebView2 既定メニューが出る | tree-view | Fixed |
+| [BUG-003](./tickets/BUG-003.md) | 保管庫スイッチャの一覧がフォルダ名でなくフルパス表示 | vault-switch | Closed |
+| [BUG-004](./tickets/BUG-004.md) | ツリー空白部の右クリックで WebView2 既定メニューが出る | tree-view | Closed |
 | [BUG-005](./tickets/BUG-005.md) | ドラッグ&ドロップによる移動が全く動作しない | tree-view | Closed |
 | [BUG-006](./tickets/BUG-006.md) | redo（Ctrl+Y）が動作しない | editor/core | Closed |
