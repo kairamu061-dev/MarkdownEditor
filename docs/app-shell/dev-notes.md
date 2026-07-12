@@ -13,6 +13,7 @@
 |------|------|
 | devcontainer に Rust / Tauri の Linux 依存ライブラリが未導入だった | rustup で Rust stable を、apt で build-essential / libwebkit2gtk-4.1-dev / libgtk-3-dev / librsvg2-dev 等を導入（2026-07-04）。コンテナ再作成時に消えるため、恒久化するには .devcontainer/Dockerfile への追加が必要（ユーザへの要望参照） |
 | バンドルターゲット（MSI/NSIS）は Windows 専用のため Linux でビルド不可 | Linux では `tauri build -- --no-bundle` でバイナリ生成までを検証。GUI 動作は Xvfb 上で起動・スクリーンショット・Ctrl+B 操作により確認（test-cases.md 参照） |
+| 実機の手動確認のたびにビルド・起動手順を打つのが手間（ユーザー要望 2026-07-12） | `scripts/verify-build.bat` を追加。依存導入 → リリースビルド →（`run` 指定で）起動までを 1 コマンド化。第 2 引数で保管庫指定（MDE_VAULT）、`bundle` で MSI/NSIS 生成。.gitattributes が全体 LF 強制のままだと cmd がバッチを誤解釈するため `*.bat eol=crlf` を追加（BUG-001 の逆パターン） |
 
 ## 設計からの変更点
 

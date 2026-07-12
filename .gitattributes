@@ -1,1 +1,4 @@
 * text=auto eol=lf
+# バッチファイルは CRLF でないと cmd がラベル等を正しく解釈できない（BUG-001 の逆パターン）
+*.bat text eol=crlf
+*.cmd text eol=crlf
