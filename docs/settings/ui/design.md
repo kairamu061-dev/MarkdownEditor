@@ -28,7 +28,14 @@ src/settings/
 // api.ts — store の Settings と同型
 interface EditorSettings { fontFamily: string | null; fontSize: number | null }
 interface Settings { lastVault: string | null; editor: EditorSettings }
+
+// index.ts — フォントプリセット（spec.md の表と同一。value は CSS font-family 文字列）
+const FONT_OPTIONS: ReadonlyArray<{ label: string; value: string | null }>;
 ```
+
+- フォントファミリーは `<select>` でプリセットから選択（2026-07-12 自由入力から変更）。
+  保存形式は従来どおり CSS `font-family` 文字列 / null のため、store（Rust 側）と適用処理は変更なし。
+  保存済みの値がプリセット外なら「カスタム（現在の設定）」option を動的に追加して保持する
 
 ## インターフェース
 
