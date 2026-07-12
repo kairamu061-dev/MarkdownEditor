@@ -11,7 +11,9 @@
 - [x] `renderVaultSwitcher` / `openSwitcher` / `switchToVault` / `applyVault` の実装
 - [x] スイッチャ用 CSS（プルダウン・現在項目強調・区切り線）
 - [x] 外側クリック / Esc での閉じ処理
-- [ ] Windows 11 実機での切り替え動作確認（test-cases E-01）
+- [x] Windows 11 実機での切り替え動作確認（test-cases E-01、2026-07-09 確認済み）
+- [x] `remove_recent_vault(path)` コマンド追加と lib.rs への登録（2026-07-12）
+- [x] 履歴項目の右クリックメニュー「履歴から削除」（現在の保管庫では非表示・一覧を開いたまま更新）
 
 ## 依存関係
 

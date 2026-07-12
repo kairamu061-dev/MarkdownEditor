@@ -21,6 +21,7 @@ pub fn run() {
             vault::rename_path,
             vault::move_path,
             vault::delete_path,
+            vault::remove_recent_vault,
             settings::get_settings,
             settings::save_settings,
             settings::save_editor_settings,

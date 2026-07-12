@@ -32,3 +32,5 @@ export const movePath = (from: string, toDir: string) =>
   invoke<void>("move_path", { from, toDir });
 export const deletePath = (relPath: string) =>
   invoke<void>("delete_path", { relPath });
+export const removeRecentVault = (path: string) =>
+  invoke<void>("remove_recent_vault", { path });

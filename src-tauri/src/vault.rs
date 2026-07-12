@@ -140,6 +140,16 @@ fn remember_vault(app: &tauri::AppHandle, root: &Path) {
     }
 }
 
+/// 最近の保管庫一覧（recentVaults）から指定パスを取り除く。
+/// lastVault とディスク上のフォルダには触れない（履歴のみの削除）
+#[tauri::command]
+pub fn remove_recent_vault(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    let settings_path = crate::settings::settings_path(&app)?;
+    let mut settings = crate::settings::load(&settings_path);
+    settings.recent_vaults.retain(|v| v != &path);
+    crate::settings::save(&settings_path, &settings)
+}
+
 #[tauri::command]
 pub async fn pick_vault(
     app: tauri::AppHandle,
