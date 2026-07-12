@@ -19,5 +19,5 @@
 | [BUG-002](./tickets/BUG-002.md) | ノートを開くと畳んでいたフォルダがすべて開いてしまう | tree-view | Fixed |
 | [BUG-003](./tickets/BUG-003.md) | 保管庫スイッチャの一覧がフォルダ名でなくフルパス表示 | vault-switch | Fixed |
 | [BUG-004](./tickets/BUG-004.md) | ツリー空白部の右クリックで WebView2 既定メニューが出る | tree-view | Fixed |
-| [BUG-005](./tickets/BUG-005.md) | ドラッグ&ドロップによる移動が全く動作しない | tree-view | Fixed |
-| [BUG-006](./tickets/BUG-006.md) | redo（Ctrl+Y）が動作しない | editor/core | Fixed |
+| [BUG-005](./tickets/BUG-005.md) | ドラッグ&ドロップによる移動が全く動作しない | tree-view | Closed |
+| [BUG-006](./tickets/BUG-006.md) | redo（Ctrl+Y）が動作しない | editor/core | Closed |
