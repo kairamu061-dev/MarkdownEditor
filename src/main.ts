@@ -8,7 +8,7 @@ import { initExplorer, explorerDocChanged, openNoteByName } from "./explorer";
 import { initSettings } from "./settings";
 
 initTitlebar();
-initSidebar(document.getElementById("app")!);
+initSidebar();
 initSettings();
 const editor = mountEditor(document.getElementById("main-content")!, {
   extraExtensions: [

@@ -21,3 +21,4 @@
 | [BUG-004](./tickets/BUG-004.md) | ツリー空白部の右クリックで WebView2 既定メニューが出る | tree-view | Closed |
 | [BUG-005](./tickets/BUG-005.md) | ドラッグ&ドロップによる移動が全く動作しない | tree-view | Closed |
 | [BUG-006](./tickets/BUG-006.md) | redo（Ctrl+Y）が動作しない | editor/core | Closed |
+| [BUG-007](./tickets/BUG-007.md) | サイドバー開閉トグル（☰ ボタン）が効かない | app-shell | Fixed |
