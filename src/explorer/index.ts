@@ -7,6 +7,7 @@ import {
   openVault,
   pickVault,
   readNote,
+  removeRecentVault,
   writeNote,
   type TreeNode,
   type VaultInfo,
@@ -367,10 +368,45 @@ async function switchToVault(path: string): Promise<void> {
 // --- 保管庫スイッチャ（Obsidian 風のプルダウン） ---
 
 let switcherMenu: HTMLElement | null = null;
+let recentItemMenu: HTMLElement | null = null;
 
 export function closeSwitcher(): void {
+  closeRecentItemMenu();
   switcherMenu?.remove();
   switcherMenu = null;
+}
+
+function closeRecentItemMenu(): void {
+  recentItemMenu?.remove();
+  recentItemMenu = null;
+}
+
+/** 履歴項目の右クリックメニュー（「履歴から削除」）。現在の保管庫では呼ばない */
+function showRecentItemMenu(e: MouseEvent, path: string, anchor: HTMLElement): void {
+  closeRecentItemMenu();
+
+  const menu = document.createElement("div");
+  menu.className = "context-menu";
+  const del = document.createElement("button");
+  del.className = "context-menu-item";
+  del.textContent = "履歴から削除";
+  del.addEventListener("click", () => {
+    closeRecentItemMenu();
+    removeRecentVault(path)
+      .then(() => openSwitcher(anchor)) // 一覧を開いたまま更新
+      .catch((err) => {
+        console.error("remove_recent_vault failed:", err);
+        showStatus("操作に失敗しました");
+      });
+  });
+  menu.appendChild(del);
+  document.body.appendChild(menu);
+
+  const { innerWidth, innerHeight } = window;
+  const rect = menu.getBoundingClientRect();
+  menu.style.left = `${Math.min(e.clientX, innerWidth - rect.width - 4)}px`;
+  menu.style.top = `${Math.min(e.clientY, innerHeight - rect.height - 4)}px`;
+  recentItemMenu = menu;
 }
 
 async function openSwitcher(anchor: HTMLElement): Promise<void> {
@@ -381,6 +417,8 @@ async function openSwitcher(anchor: HTMLElement): Promise<void> {
 
   const menu = document.createElement("div");
   menu.className = "vault-switcher-menu";
+  // スイッチャは body 直下（#sidebar 外）なので、ここでも既定メニューを抑止する
+  menu.addEventListener("contextmenu", (e) => e.preventDefault());
 
   for (const path of recents) {
     const item = document.createElement("button");
@@ -392,6 +430,12 @@ async function openSwitcher(anchor: HTMLElement): Promise<void> {
       closeSwitcher();
       if (path !== current) void switchToVault(path);
     });
+    // 現在の保管庫は履歴から消しても次回オープンで復活するため、削除メニューを出さない
+    if (path !== current) {
+      item.addEventListener("contextmenu", (e) => {
+        showRecentItemMenu(e, path, anchor);
+      });
+    }
     menu.appendChild(item);
   }
 
@@ -473,11 +517,11 @@ export function initExplorer(el: HTMLElement, editorHandle: EditorHandle): void 
     if (e.key === "Escape") closeSwitcher();
   });
   window.addEventListener("mousedown", (e) => {
-    const target = e.target as Node;
-    if (
-      !(target instanceof Element) ||
-      !target.closest(".vault-switcher-menu, .vault-switcher-button")
-    ) {
+    const el = e.target instanceof Element ? e.target : null;
+    // 「履歴から削除」メニューの外を押したらメニューだけ閉じる。
+    // メニュー自身の mousedown で閉じると click が発火しないため除外する
+    if (!el?.closest(".context-menu")) closeRecentItemMenu();
+    if (!el?.closest(".vault-switcher-menu, .vault-switcher-button, .context-menu")) {
       closeSwitcher();
     }
   });
