@@ -74,15 +74,35 @@ function buildDecorations(view: EditorView): DecorationSet {
           return;
         }
 
-        // インラインリンク: [テキスト](URL) のマークと URL を隠す
+        // インラインリンク: [テキスト](URL) のマークと URL を隠し、テキストにクリック属性を付与
         if (node.name === "Link") {
           if (touchesSelection(state, node.from, node.to)) return;
           const link = node.node;
+          const local: Range<Decoration>[] = [];
+          let urlText = "";
+          let ltFrom = -1;
+          let ltTo = -1;
           for (let child = link.firstChild; child; child = child.nextSibling) {
-            if (child.name === "LinkMark" || child.name === "URL") {
-              decorations.push(hide.range(child.from, child.to));
+            if (child.name === "URL") {
+              urlText = doc.sliceString(child.from, child.to);
+              local.push(hide.range(child.from, child.to));
+            } else if (child.name === "LinkMark") {
+              local.push(hide.range(child.from, child.to));
+            } else if (child.name === "LinkText") {
+              ltFrom = child.from;
+              ltTo = child.to;
             }
           }
+          if (urlText && ltFrom >= 0) {
+            local.push(
+              Decoration.mark({
+                class: "cm-md-link",
+                attributes: { "data-href": urlText },
+              }).range(ltFrom, ltTo),
+            );
+          }
+          local.sort((a, b) => a.from - b.from);
+          decorations.push(...local);
           return;
         }
 
@@ -126,8 +146,22 @@ const livePreviewTheme = EditorView.baseTheme({
   ".cm-list-bullet": {
     color: "var(--accent)",
   },
+  ".cm-md-link": {
+    cursor: "pointer",
+  },
 });
 
-export function livePreview(): Extension {
-  return [livePreviewPlugin, livePreviewTheme];
+export function livePreview(onLinkClick: (href: string) => void): Extension {
+  const clickHandler = EditorView.domEventHandlers({
+    mousedown(event) {
+      const target = event.target as HTMLElement;
+      const el = target.closest?.("[data-href]");
+      const href = el?.getAttribute("data-href");
+      if (!href) return false;
+      event.preventDefault();
+      onLinkClick(href);
+      return true;
+    },
+  });
+  return [livePreviewPlugin, livePreviewTheme, clickHandler];
 }
