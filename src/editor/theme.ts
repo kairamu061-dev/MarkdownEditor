@@ -39,8 +39,10 @@ export const nordTheme = EditorView.theme(
 );
 
 export const nordHighlightStyle = HighlightStyle.define([
-  { tag: t.heading1, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.6em" },
-  { tag: t.heading2, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.4em" },
+  // t.heading (base) matches TableHeader cells; level-specific rules take precedence for ATX headings
+  { tag: t.heading, color: "var(--accent-secondary)", fontWeight: "700" },
+  { tag: t.heading1, color: "var(--warning)", fontWeight: "700", fontSize: "1.6em" },
+  { tag: t.heading2, color: "var(--accent)", fontWeight: "700", fontSize: "1.4em" },
   { tag: t.heading3, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.25em" },
   { tag: t.heading4, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.15em" },
   { tag: t.heading5, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.05em" },
@@ -59,7 +61,7 @@ export const nordHighlightStyle = HighlightStyle.define([
   { tag: t.url, color: "var(--accent)" },
   { tag: t.quote, fontStyle: "italic" },
   { tag: t.contentSeparator, color: "var(--border)" },
-  { tag: t.processingInstruction, color: "var(--border)" },
+  { tag: t.processingInstruction, color: "var(--syntax-mark)" },
   { tag: t.labelName, color: "var(--accent-secondary)" },
 
   // コードブロック内トークン（editor/code-highlight spec の配色表に対応）

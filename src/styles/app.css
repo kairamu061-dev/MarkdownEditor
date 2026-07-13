@@ -26,8 +26,8 @@ body {
 
 /* --- スクロールバー（全スクロール領域を Nord 配色に統一） --- */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
 }
 
 ::-webkit-scrollbar-track {
