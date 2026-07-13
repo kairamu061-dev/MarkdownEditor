@@ -13,7 +13,13 @@ initSidebar();
 initSettings();
 const editor = mountEditor(document.getElementById("main-content")!, {
   extraExtensions: [
-    livePreview(),
+    livePreview((href) => {
+      if (/^https?:\/\//i.test(href)) return; // 外部 URL は未対応
+      // 相対パスのノートリンク: .md を除いてファイル名で検索
+      const name = href.replace(/\.md$/i, "").replace(/^\.\//, "");
+      const base = name.split(/[\\/]/).pop() ?? name;
+      void openNoteByName(base);
+    }),
     codeBlockStyle(),
     tablePreview(),
     wikilink((name) => void openNoteByName(name)),
