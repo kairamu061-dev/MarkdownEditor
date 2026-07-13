@@ -42,9 +42,9 @@ export const nordHighlightStyle = HighlightStyle.define([
   // t.heading (base) matches TableHeader cells; level-specific rules take precedence for ATX headings
   { tag: t.heading, color: "var(--accent-secondary)", fontWeight: "700" },
   { tag: t.heading1, color: "var(--warning)", fontWeight: "700", fontSize: "1.6em" },
-  { tag: t.heading2, color: "var(--accent)", fontWeight: "700", fontSize: "1.4em" },
-  { tag: t.heading3, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.25em" },
-  { tag: t.heading4, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.15em" },
+  { tag: t.heading2, color: "var(--success)", fontWeight: "700", fontSize: "1.4em" },
+  { tag: t.heading3, color: "var(--nord15)", fontWeight: "700", fontSize: "1.25em" },
+  { tag: t.heading4, color: "var(--accent)", fontWeight: "700", fontSize: "1.15em" },
   { tag: t.heading5, color: "var(--accent-secondary)", fontWeight: "700", fontSize: "1.05em" },
   { tag: t.heading6, color: "var(--accent-secondary)", fontWeight: "700" },
   { tag: t.strong, color: "var(--text-strong)", fontWeight: "700" },
