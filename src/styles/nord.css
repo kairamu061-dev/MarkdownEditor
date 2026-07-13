@@ -41,4 +41,5 @@
   --scrollbar-thumb: var(--nord3);
   --scrollbar-thumb-hover: var(--nord10);
   --syntax-mark: var(--nord10);
+  --comment: color-mix(in srgb, var(--nord4) 40%, var(--nord3));
 }
