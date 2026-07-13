@@ -24,6 +24,31 @@ body {
   min-height: 0;
 }
 
+/* --- スクロールバー（全スクロール領域を Nord 配色に統一） --- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-color: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* --- カスタムタイトルバー（フレームレスウィンドウ） --- */
 .titlebar {
   display: flex;

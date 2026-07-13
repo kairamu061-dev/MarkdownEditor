@@ -38,4 +38,6 @@
   --error: var(--nord11);
   --warning: var(--nord13);
   --success: var(--nord14);
+  --scrollbar-thumb: var(--nord3);
+  --scrollbar-thumb-hover: var(--nord10);
 }
