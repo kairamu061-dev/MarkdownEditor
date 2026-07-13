@@ -11,6 +11,34 @@ function touchesSelection(state: EditorState, from: number, to: number): boolean
   return state.selection.ranges.some((r) => r.to >= from && r.from <= to);
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// セルテキストをインライン Markdown として HTML に変換する（最小限サブセット）
+function renderInline(raw: string): string {
+  // 1. コードスパン（`...`）を先に退避させ、内部を他のルールから保護する
+  const saved: string[] = [];
+  let s = escapeHtml(raw).replace(/`([^`\n]+)`/g, (_, code) => {
+    saved.push(code); // already HTML-escaped because we escaped the whole string
+    return `\x00${saved.length - 1}\x00`;
+  });
+
+  // 2. その他のインライン記法（escapeHtml 済みテキスト上で適用）
+  s = s
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__(.+?)__/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/_(.+?)_/g, "<em>$1</em>")
+    .replace(/~~(.+?)~~/g, "<del>$1</del>")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '<span class="cm-table-link">$1</span>')
+    .replace(/\[\[([^\]]+)\]\]/g, '<span class="cm-table-link">$1</span>');
+
+  // 3. コードスパンを復元
+  return s.replace(/\x00(\d+)\x00/g, (_, i) => `<code>${saved[+i]}</code>`);
+}
+
 class TableWidget extends WidgetType {
   constructor(
     private readonly head: string[][],
@@ -32,7 +60,7 @@ class TableWidget extends WidgetType {
         const tr = thead.insertRow();
         for (const cell of row) {
           const th = document.createElement("th");
-          th.textContent = cell;
+          th.innerHTML = renderInline(cell);
           tr.appendChild(th);
         }
       }
@@ -44,7 +72,7 @@ class TableWidget extends WidgetType {
         const tr = tbody.insertRow();
         for (const cell of row) {
           const td = tr.insertCell();
-          td.textContent = cell;
+          td.innerHTML = renderInline(cell);
         }
       }
     }
@@ -153,6 +181,17 @@ const tablePreviewTheme = EditorView.baseTheme({
     backgroundColor: "var(--bg-sidebar)",
     color: "var(--accent-secondary)",
     fontWeight: "700",
+  },
+  ".cm-table code": {
+    fontFamily: "'Cascadia Code', Consolas, monospace",
+    fontSize: "0.9em",
+    backgroundColor: "var(--bg-hover)",
+    borderRadius: "3px",
+    padding: "0 2px",
+  },
+  ".cm-table-link": {
+    color: "var(--accent)",
+    textDecoration: "underline",
   },
 });
 
