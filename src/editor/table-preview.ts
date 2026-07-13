@@ -2,11 +2,9 @@ import {
   Decoration,
   type DecorationSet,
   EditorView,
-  ViewPlugin,
-  type ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { type EditorState, type Extension, type Range } from "@codemirror/state";
+import { type EditorState, type Extension, type Range, StateField } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 
 function touchesSelection(state: EditorState, from: number, to: number): boolean {
@@ -67,78 +65,72 @@ class TableWidget extends WidgetType {
   }
 }
 
-function buildDecorations(view: EditorView): DecorationSet {
+function buildDecorations(state: EditorState): DecorationSet {
   const decorations: Range<Decoration>[] = [];
-  const { state } = view;
   const doc = state.doc;
 
-  for (const { from, to } of view.visibleRanges) {
-    syntaxTree(state).iterate({
-      from,
-      to,
-      enter(nodeRef) {
-        if (nodeRef.name !== "Table") return;
-        if (touchesSelection(state, nodeRef.from, nodeRef.to)) return false;
+  syntaxTree(state).iterate({
+    enter(nodeRef) {
+      if (nodeRef.name !== "Table") return;
+      if (touchesSelection(state, nodeRef.from, nodeRef.to)) return false;
 
-        const head: string[][] = [];
-        const body: string[][] = [];
+      const head: string[][] = [];
+      const body: string[][] = [];
 
-        for (let child = nodeRef.node.firstChild; child; child = child.nextSibling) {
-          if (child.name === "TableHeader") {
-            const cells: string[] = [];
-            for (let cell = child.firstChild; cell; cell = cell.nextSibling) {
-              if (cell.name === "TableCell") {
-                cells.push(doc.sliceString(cell.from, cell.to).trim());
-              }
+      for (let child = nodeRef.node.firstChild; child; child = child.nextSibling) {
+        if (child.name === "TableHeader") {
+          const cells: string[] = [];
+          for (let cell = child.firstChild; cell; cell = cell.nextSibling) {
+            if (cell.name === "TableCell") {
+              cells.push(doc.sliceString(cell.from, cell.to).trim());
             }
-            if (cells.length > 0) head.push(cells);
-          } else if (child.name === "TableRow") {
-            const cells: string[] = [];
-            for (let cell = child.firstChild; cell; cell = cell.nextSibling) {
-              if (cell.name === "TableCell") {
-                cells.push(doc.sliceString(cell.from, cell.to).trim());
-              }
-            }
-            if (cells.length > 0) body.push(cells);
           }
+          if (cells.length > 0) head.push(cells);
+        } else if (child.name === "TableRow") {
+          const cells: string[] = [];
+          for (let cell = child.firstChild; cell; cell = cell.nextSibling) {
+            if (cell.name === "TableCell") {
+              cells.push(doc.sliceString(cell.from, cell.to).trim());
+            }
+          }
+          if (cells.length > 0) body.push(cells);
         }
+      }
 
-        if (head.length === 0 && body.length === 0) return false;
+      if (head.length === 0 && body.length === 0) return false;
 
-        const rangeFrom = doc.lineAt(nodeRef.from).from;
-        const rangeTo = doc.lineAt(nodeRef.to).to;
+      const rangeFrom = doc.lineAt(nodeRef.from).from;
+      const rangeTo = doc.lineAt(nodeRef.to).to;
 
-        decorations.push(
-          Decoration.replace({
-            widget: new TableWidget(head, body),
-            block: true,
-          }).range(rangeFrom, rangeTo),
-        );
+      decorations.push(
+        Decoration.replace({
+          widget: new TableWidget(head, body),
+          block: true,
+        }).range(rangeFrom, rangeTo),
+      );
 
-        return false;
-      },
-    });
-  }
+      return false;
+    },
+  });
 
   return Decoration.set(decorations, true);
 }
 
-const tablePreviewPlugin = ViewPlugin.fromClass(
-  class {
-    decorations: DecorationSet;
-
-    constructor(view: EditorView) {
-      this.decorations = buildDecorations(view);
-    }
-
-    update(update: ViewUpdate): void {
-      if (update.docChanged || update.selectionSet || update.viewportChanged) {
-        this.decorations = buildDecorations(update.view);
-      }
-    }
+// StateField を使うことで EditorView.decorations.from() 経由でブロックデコレーションを提供できる。
+// ViewPlugin の decorations オプションや EditorView.decorations.of(fn) では
+// "Block decorations may not be specified via plugins" で禁止されているため使用不可。
+const tableDecoField = StateField.define<DecorationSet>({
+  create(state) {
+    return buildDecorations(state);
   },
-  { decorations: (plugin) => plugin.decorations },
-);
+  update(deco, tr) {
+    if (tr.docChanged || !tr.newSelection.eq(tr.startState.selection)) {
+      return buildDecorations(tr.state);
+    }
+    return deco.map(tr.changes);
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
 
 const tablePreviewTheme = EditorView.baseTheme({
   ".cm-table-wrap": {
@@ -165,5 +157,5 @@ const tablePreviewTheme = EditorView.baseTheme({
 });
 
 export function tablePreview(): Extension {
-  return [tablePreviewPlugin, tablePreviewTheme];
+  return [tableDecoField, tablePreviewTheme];
 }
