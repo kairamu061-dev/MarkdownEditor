@@ -22,7 +22,7 @@ export const nordTheme = EditorView.theme(
       lineHeight: "1.6",
     },
     ".cm-content": {
-      maxWidth: "800px",
+      maxWidth: "1100px",
       margin: "0 auto",
       padding: "32px 24px",
       caretColor: "var(--accent)",
