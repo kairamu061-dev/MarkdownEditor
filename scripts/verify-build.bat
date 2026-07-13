@@ -25,11 +25,25 @@ if errorlevel 1 (
   exit /b 1
 )
 
+rem 起動中のアプリが exe をロックしているとリンクに失敗するため先に終了する
+tasklist /fi "imagename eq MarkdownEditor.exe" 2>nul | find /i "MarkdownEditor.exe" >nul && (
+  echo 起動中の MarkdownEditor を終了します（編集内容は自動保存済みのはずです）
+  taskkill /f /im MarkdownEditor.exe >nul 2>nul
+)
+tasklist /fi "imagename eq markdown-editor.exe" 2>nul | find /i "markdown-editor.exe" >nul && (
+  taskkill /f /im markdown-editor.exe >nul 2>nul
+)
+
 if not exist node_modules (
   echo === 依存パッケージを導入します（初回のみ） ===
   call npm install
   if errorlevel 1 exit /b 1
 )
+
+echo.
+echo ※最後の「Building ... markdown-editor」は LTO 最適化のため数分〜十数分
+echo   止まって見えますが正常です。rustc が CPU を使っていればそのまま待ってください。
+echo.
 
 if /i "%~1"=="bundle" (
   echo === リリースビルド（MSI / NSIS 付き） ===
