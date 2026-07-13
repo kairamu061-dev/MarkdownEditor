@@ -67,7 +67,7 @@ export const nordHighlightStyle = HighlightStyle.define([
   // コードブロック内トークン（editor/code-highlight spec の配色表に対応）
   { tag: t.keyword, color: "var(--accent-secondary)" },
   { tag: [t.string, t.special(t.string)], color: "var(--success)" },
-  { tag: t.comment, color: "var(--border)", fontStyle: "italic" },
+  { tag: t.comment, color: "var(--comment)", fontStyle: "italic" },
   { tag: [t.number, t.bool, t.atom], color: "var(--nord15)" },
   { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "var(--accent)" },
   { tag: [t.typeName, t.className, t.namespace], color: "var(--nord7)" },
