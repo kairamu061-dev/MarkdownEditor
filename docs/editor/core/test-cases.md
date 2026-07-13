@@ -22,6 +22,7 @@
 | E-04 | Windows 11 実機 | Windows 実機 | E-01〜E-03 を実施 | 同一挙動 | [x] |
 | E-05 | 日本語 IME 入力 | Windows 実機 | IME で本文の入力・変換 | 正常に入力・変換できる | [x] |
 | E-06 | redo キーバインド | Windows 実機 | 入力 → Ctrl+Z → Ctrl+Y、および Ctrl+Shift+Z | どちらでも redo できる（BUG-006 修正） | [x] |
+| E-07 | 見出しとテーブルの配色 | Windows 実機 | Markdown の `# H1`〜`###### H6`、GFM テーブル、`# ` マーク（カーソル当て）を表示 | H1=gold(nord13)、H2=accent(nord8)、H3-H6=accent-secondary(nord9) で階層が色で見える。テーブルの `\|` 区切りが視認できる（nord10）。テーブルヘッダーが bold 表示。`#` マーク（ソース表示時）が沈み込まず読める | [ ] |
 
 ## ステータス凡例
 

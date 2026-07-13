@@ -40,4 +40,5 @@
   --success: var(--nord14);
   --scrollbar-thumb: var(--nord3);
   --scrollbar-thumb-hover: var(--nord10);
+  --syntax-mark: var(--nord10);
 }

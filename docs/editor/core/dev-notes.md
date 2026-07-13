@@ -20,6 +20,9 @@
 | 変更内容 | 理由 |
 |----------|------|
 | theme.ts の .cm-scroller を CSS 変数参照に変更（--editor-font-family / --editor-font-size、フォールバック付き） | settings/ui のフォント設定に対応するため（2026-07-05）。未設定時の見た目は従来どおり |
+| 見出し色を h1=gold(--warning/nord13)、h2=accent(nord8)、h3-h6=accent-secondary(nord9) の 3 段階に変更（2026-07-13） | 全レベル同色（nord9）では「地味すぎる」との実機フィードバック。サイズ差に加え色の段差で視覚的なヒエラルキーを強調。aurora 色は h1 のみ（金色）に限定し全体配色との調和を保つ |
+| processingInstruction タグ色を --border(nord3) → --syntax-mark(nord10) に変更（2026-07-13） | `#` 見出しマーク（HeaderMark）と `\|` テーブル区切り（TableDelimiter）が暗い背景に溶け込んで見えないとの実機フィードバック。nord10（#5e81ac）はコントラスト比 3.6:1 で可読だが本文より沈んだ落ち着きを保つ。同タグが両マーク共通なので一括変更 |
+| HighlightStyle に t.heading（基底）ルールを追加（2026-07-13） | GFM テーブルのヘッダーセル（TableHeader）が tags.heading 基底タグでタグ付けされるが h1-h6 ルールは heading1-6 サブタグにしか一致しないため、テーブルヘッダーが平文扱いになっていた。t.heading 基底ルール追加で bold + accent-secondary 色が当たる。h1-h6 は特化タグが優先するため既存の配色は変わらない |
 
 ## 今後の課題
 
