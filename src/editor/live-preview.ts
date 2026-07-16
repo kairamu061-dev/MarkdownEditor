@@ -149,6 +149,12 @@ const livePreviewTheme = EditorView.baseTheme({
   ".cm-md-link": {
     cursor: "pointer",
   },
+  // 箇条書き行のハンギングインデント: • の直後でテキストが折り返すよう調整
+  // 段数によらず固定オフセット（"• " の幅 ≈ 1.4ch）で揃える
+  ".cm-line:has(.cm-list-bullet)": {
+    paddingLeft: "1.4ch",
+    textIndent: "-1.4ch",
+  },
 });
 
 export function livePreview(onLinkClick: (href: string) => void): Extension {
