@@ -36,3 +36,15 @@
 ## ユーザへの要望
 
 - Windows 11 実機での動作確認（test-cases.md E-05）
+
+## Windows ビルド時の注意（2026-07-17）
+
+devcontainer（Linux）で `npm install` を実行すると `node_modules` に Linux 用バインディングが入る。
+Windows 実機でビルドする際は `node_modules` を削除してから `npm install` を再実行すること。
+`package-lock.json` 自体は win32 エントリを含むため削除不要。
+
+```powershell
+rd /s /q node_modules
+npm install
+npm run tauri build --no-bundle
+```
