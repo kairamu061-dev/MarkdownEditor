@@ -22,7 +22,8 @@
 | E-04 | Windows 11 実機 | Windows 実機 | E-01〜E-03 を実施 | 同一挙動 | [x] |
 | E-05 | 日本語 IME 入力 | Windows 実機 | IME で本文の入力・変換 | 正常に入力・変換できる | [x] |
 | E-06 | redo キーバインド | Windows 実機 | 入力 → Ctrl+Z → Ctrl+Y、および Ctrl+Shift+Z | どちらでも redo できる（BUG-006 修正） | [x] |
-| E-07 | 見出しとテーブルの配色 | Windows 実機 | Markdown の `# H1`〜`###### H6`、GFM テーブル、`# ` マーク（カーソル当て）を表示 | H1=gold(nord13)、H2=accent(nord8)、H3-H6=accent-secondary(nord9) で階層が色で見える。テーブルの `\|` 区切りが視認できる（nord10）。テーブルヘッダーが bold 表示。`#` マーク（ソース表示時）が沈み込まず読める | [ ] |
+| E-07 | 見出しの配色階層 | Windows 実機 | `# H1`〜`###### H6` を含むノートを表示 | H1=gold(nord13)、H2=green(nord14)、H3=mauve(nord15)、H4=cyan(nord8)、H5/H6=blue(nord9) で 6 段の色が異なる。フォントサイズも H1>H2>H3>H4>H5≈H6 の順に縮小 | [x] |
+| E-08 | 引用文 Backspace 正常動作 | Windows 実機 | `> 引用テキスト` の行中でカーソルを置き Backspace を押す | カーソル直前の 1 文字のみが削除される。上の行は変化しない（BUG-008 修正確認） | [x] |
 
 ## ステータス凡例
 
@@ -41,3 +42,5 @@ Windows 11 実機で本文の入力・変換を確認し合格。
 E-06 は 2026-07-12 のユーザー確認で redo（Ctrl+Y）が Windows で動作しない（BUG-006）と判明したため追加。
 Ctrl+Y / Ctrl+Shift+Z の両方を明示バインドする修正を入れ（`1803e76`）、2026-07-12 にユーザーが Windows 11 実機で
 redo 動作を確認し合格。なお E-03 の redo は Linux（Xvfb）では Mod-y バインドで動作しており合格扱い。
+E-07 は 2026-07-17 の見出し配色変更（H2=nord14/green、H3=nord15/mauve）に合わせて追加。2026-07-20 の Windows 11 実機検証（`9ccc41a`）で 6 段の配色階調・サイズ階調を確認し合格。
+E-08 は BUG-008（@codemirror/lang-markdown 6.5.1 更新）の確認用。2026-07-20 の Windows 11 実機検証（`9ccc41a`）で行中 Backspace が 1 文字のみ削除・上行不変を確認し合格。
