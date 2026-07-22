@@ -42,4 +42,8 @@
   --scrollbar-thumb-hover: var(--nord10);
   --syntax-mark: var(--nord10);
   --comment: color-mix(in srgb, var(--nord4) 40%, var(--nord3));
+  /* 引用（blockquote）: 左バー・本文・背景の 3 要素で「引用らしさ」を出す */
+  --quote-bar: var(--nord9);
+  --quote-text: color-mix(in srgb, var(--nord4) 75%, var(--nord3));
+  --quote-bg: color-mix(in srgb, var(--nord9) 10%, transparent);
 }
