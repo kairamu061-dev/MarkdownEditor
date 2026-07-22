@@ -24,4 +24,4 @@
 | [BUG-007](./tickets/BUG-007.md) | サイドバー開閉トグル（☰ ボタン）が効かない | app-shell | Fixed |
 | [BUG-008](./tickets/BUG-008.md) | 引用文（`>`）内での Backspace / 入力が誤動作する | editor/core | Closed |
 | [BUG-009](./tickets/BUG-009.md) | 箇条書きの深いネストが視覚的に判別しにくい / Tab 連打後 Enter で最上位に戻る | editor/live-preview | Closed |
-| [BUG-010](./tickets/BUG-010.md) | 引用行の改行→Backspace の直後に日本語 IME 変換確定すると文字化けする | editor/core | Open |
+| [BUG-010](./tickets/BUG-010.md) | 引用行の改行→Backspace の直後に日本語 IME 変換確定すると文字化けする | editor/core | Fixed |
