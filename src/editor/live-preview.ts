@@ -23,8 +23,7 @@ class BulletWidget extends WidgetType {
 
 const bullet = Decoration.replace({ widget: new BulletWidget() });
 const hide = Decoration.replace({});
-// 引用行に付ける行デコレーション（左バー・背景・本文色は CSS 側で付与）。
-// テキストを隠さない加算的な装飾なので、IME composition / deleteMarkupBackward に干渉しない（BUG-010 参照）
+// 引用行に付ける行デコレーション（左バー・背景・本文色は CSS 側で付与）
 const blockquoteLine = Decoration.line({ class: "cm-blockquote" });
 
 // 記法マークノード → ソース表示の判定に使う親ノード（仕様: 判定単位は構文ノード全体）
@@ -50,17 +49,20 @@ function buildDecorations(view: EditorView): DecorationSet {
       from,
       to,
       enter(node) {
-        // 引用ブロック: 各行に cm-blockquote を付与（マークは隠さず加算的に装飾）
-        if (node.name === "Blockquote") {
-          const lastPos = node.to > node.from ? node.to - 1 : node.to;
-          const startLine = doc.lineAt(node.from).number;
-          const endLine = doc.lineAt(lastPos).number;
-          for (let n = startLine; n <= endLine; n++) {
-            const line = doc.line(n);
-            if (!quoteLineStarts.has(line.from)) {
-              quoteLineStarts.add(line.from);
-              decorations.push(blockquoteLine.range(line.from));
-            }
+        // 引用マーク `>`: その行に cm-blockquote を付与し、`>`（＋直後の空白）を隠す。
+        // 判定基準を Blockquote ノードではなく QuoteMark にすることで、行頭が実際に `>` の行だけが
+        // 引用扱いになる。CommonMark の遅延継続で `>` の無い行が Blockquote に含まれても装飾しない
+        if (node.name === "QuoteMark") {
+          const line = doc.lineAt(node.from);
+          if (!quoteLineStarts.has(line.from)) {
+            quoteLineStarts.add(line.from);
+            decorations.push(blockquoteLine.range(line.from));
+          }
+          // カーソルがその行にある間は `>` をソース表示（編集・削除できるように）
+          if (!touchesSelection(state, line.from, line.to)) {
+            const markEnd =
+              doc.sliceString(node.to, node.to + 1) === " " ? node.to + 1 : node.to;
+            decorations.push(hide.range(node.from, markEnd));
           }
           return;
         }
