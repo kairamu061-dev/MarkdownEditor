@@ -31,6 +31,7 @@
 | 引用ブロックに左バー＋背景＋本文色を追加（2026-07-22） | 「引用の見た目が italic だけで引用っぽくない」との実機フィードバック。`Blockquote` ノードの各行に `Decoration.line({ class: "cm-blockquote" })` を付与し、CSS で `border-left`（`--quote-bar`）・淡い背景（`--quote-bg`）・落ち着いた本文色（`--quote-text`）を当てる。色は nord.css に 3 エイリアスを追加（唯一の色定義元を維持）。ネスト引用は複数ノードが同じ行を跨ぐため行頭位置の Set で重複付与を防ぐ |
 | 引用の判定基準を Blockquote → QuoteMark に変更＋`>` マークを隠す（2026-07-24） | フィードバック 2 件への対応。①「`>` の見た目を消したい」→ `QuoteMark`（＋直後の空白）を `touchesSelection`（行単位）で条件付き replace 隠蔽（カーソルのある行だけソース表示）。②「行頭が `>` でない行を引用扱いしたくない」→ 装飾の起点を `Blockquote` ノードの行走査から `QuoteMark` ノードに変更。遅延継続で `>` の無い行が Blockquote に含まれても QuoteMark が無いので装飾されない。line decoration も QuoteMark のある行にのみ付与 |
 | 斜体と Enter 継続も QuoteMark 基準へ寄せる（2026-07-26・BUG-011） | 上記変更後、遅延継続行で「斜体だけ残る」「Enter で `> ` が復活」する取りこぼしが判明。斜体は `theme.ts` の `t.quote`（Blockquote ノード基準）から `.cm-blockquote` CSS（QuoteMark 基準）へ移動。Enter は `quoteAwareEnter` を `Prec.highest` で Enter に割り当て、行頭が `>` でない遅延継続行では `insertNewline`（plain）にして lang-markdown の `insertNewlineContinueMarkup`（`Prec.high`）を上書き。行頭 `>` 行・リストは `false` を返し既定に委譲 |
+| インラインリンクのテキスト範囲を LinkMark から導出（2026-07-26・BUG-012） | Link 処理が `LinkText` ノードを前提にしていたが `@lezer/markdown` の Link には LinkText が存在せず（子は LinkMark×4 と URL のみ）、`data-href` マークが一度も付かずクリック遷移が無言で失敗していた。テキスト＝最初の `[` と `]` の LinkMark に挟まれた範囲（`marks[0].to`〜`marks[1].from`）として算出し、そこに `cm-md-link`＋`data-href` を付与、`[` と `](URL)` を隠す。太字入りリンクも対象 |
 
 ## 今後の課題
 
