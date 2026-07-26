@@ -6,7 +6,7 @@ editor は複数のサブ項目に分割されており、テストケースは�
 | サブ項目 | test-cases | 状態 |
 |----------|-----------|------|
 | core | [editor/core/test-cases.md](./core/test-cases.md) | 全合格（2026-07-20 実機で E-07 見出し配色・E-08 引用 Backspace 確認） |
-| live-preview | [editor/live-preview/test-cases.md](./live-preview/test-cases.md) | E-06〜E-12 合格（〜2026-07-24 実機）。E-13/E-14（引用の見た目・`>` 隠蔽と非引用化）は開発機で目視確認済み・Windows 実機未実施 |
+| live-preview | [editor/live-preview/test-cases.md](./live-preview/test-cases.md) | E-06〜E-14 合格（〜2026-07-26 実機）。E-15（BUG-011: Enter 継続・斜体の QuoteMark 基準化）は開発機で確認済み・Windows 実機未実施 |
 | code-highlight | [editor/code-highlight/test-cases.md](./code-highlight/test-cases.md) | 全合格 |
 | wikilink | [editor/wikilink/test-cases.md](./wikilink/test-cases.md) | 全合格 |
 

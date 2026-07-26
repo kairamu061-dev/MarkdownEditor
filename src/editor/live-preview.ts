@@ -1,13 +1,22 @@
 import {
+  type Command,
   Decoration,
   type DecorationSet,
   EditorView,
+  keymap,
   ViewPlugin,
   type ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { type EditorState, type Extension, type Range } from "@codemirror/state";
+import {
+  type EditorState,
+  type Extension,
+  Prec,
+  type Range,
+} from "@codemirror/state";
+import { insertNewline } from "@codemirror/commands";
 import { syntaxTree } from "@codemirror/language";
+import { type SyntaxNode } from "@lezer/common";
 
 class BulletWidget extends WidgetType {
   toDOM(): HTMLElement {
@@ -171,13 +180,15 @@ const livePreviewTheme = EditorView.baseTheme({
   ".cm-md-link": {
     cursor: "pointer",
   },
-  // 引用行: 左バー + 淡い背景 + 落ち着いた本文色。連続する引用行で
-  // バー・背景が縦に繋がって 1 本の引用帯に見える。マークは隠さない
+  // 引用行: 左バー + 淡い背景 + 落ち着いた本文色 + 斜体。連続する引用行で
+  // バー・背景が縦に繋がって 1 本の引用帯に見える。行頭 `>` は隠す（buildDecorations）。
+  // 斜体もここで付けることで QuoteMark のある行だけに限定する（BUG-011）
   ".cm-blockquote": {
     borderLeft: "3px solid var(--quote-bar)",
     paddingLeft: "16px",
     backgroundColor: "var(--quote-bg)",
     color: "var(--quote-text)",
+    fontStyle: "italic",
   },
   // 箇条書き行のハンギングインデント: • の直後でテキストが折り返すよう調整
   // 段数によらず固定オフセット（"• " の幅 ≈ 1.4ch）で揃える
@@ -186,6 +197,29 @@ const livePreviewTheme = EditorView.baseTheme({
     textIndent: "-1.4ch",
   },
 });
+
+// Enter の引用継続を「行頭が実際に `>` の行」に限定する（BUG-011）。
+// CommonMark の遅延継続で `>` の無い行もパーサ上は Blockquote 内になり、
+// lang-markdown の insertNewlineContinueMarkup が `> ` を挿入してしまうのを防ぐ。
+const quoteAwareEnter: Command = (view) => {
+  const { state } = view;
+  if (state.selection.ranges.length !== 1) return false;
+  const range = state.selection.main;
+  if (!range.empty) return false;
+  const line = state.doc.lineAt(range.head);
+  // 行頭が `>`（先頭空白 0〜3 まで許容）なら通常どおり引用継続させる
+  if (/^ {0,3}>/.test(line.text)) return false;
+  // 見た目は非引用だがパーサ上は Blockquote 内（遅延継続）の行なら、
+  // 引用継続させずに plain な改行にする。リスト等は Blockquote 外なので影響しない
+  for (
+    let node: SyntaxNode | null = syntaxTree(state).resolveInner(range.head, -1);
+    node;
+    node = node.parent
+  ) {
+    if (node.name === "Blockquote") return insertNewline(view);
+  }
+  return false;
+};
 
 export function livePreview(onLinkClick: (href: string) => void): Extension {
   const clickHandler = EditorView.domEventHandlers({
@@ -199,5 +233,8 @@ export function livePreview(onLinkClick: (href: string) => void): Extension {
       return true;
     },
   });
-  return [livePreviewPlugin, livePreviewTheme, clickHandler];
+  // markdown() は Enter を Prec.high で束ねるため、Prec.highest で先に判定する。
+  // quoteAwareEnter が false を返した場合は既定の insertNewlineContinueMarkup に渡る
+  const enterOverride = Prec.highest(keymap.of([{ key: "Enter", run: quoteAwareEnter }]));
+  return [livePreviewPlugin, livePreviewTheme, clickHandler, enterOverride];
 }
