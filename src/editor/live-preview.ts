@@ -105,35 +105,33 @@ function buildDecorations(view: EditorView): DecorationSet {
           return;
         }
 
-        // インラインリンク: [テキスト](URL) のマークと URL を隠し、テキストにクリック属性を付与
+        // インラインリンク: [テキスト](URL)。Lezer では LinkText ノードが無く、
+        // テキストは最初の `[` と `]` の LinkMark に挟まれた範囲。ここにクリック属性を付け、
+        // 記法（`[` と `](URL)`）を隠す。marks は文書順に [ '[', ']', '(', ')' ]
         if (node.name === "Link") {
           if (touchesSelection(state, node.from, node.to)) return;
           const link = node.node;
-          const local: Range<Decoration>[] = [];
-          let urlText = "";
-          let ltFrom = -1;
-          let ltTo = -1;
+          const marks: { from: number; to: number }[] = [];
+          let url: { from: number; to: number } | null = null;
           for (let child = link.firstChild; child; child = child.nextSibling) {
-            if (child.name === "URL") {
-              urlText = doc.sliceString(child.from, child.to);
-              local.push(hide.range(child.from, child.to));
-            } else if (child.name === "LinkMark") {
-              local.push(hide.range(child.from, child.to));
-            } else if (child.name === "LinkText") {
-              ltFrom = child.from;
-              ltTo = child.to;
+            if (child.name === "LinkMark") marks.push({ from: child.from, to: child.to });
+            else if (child.name === "URL") url = { from: child.from, to: child.to };
+          }
+          if (url && marks.length >= 4) {
+            const textFrom = marks[0].to; // `[` の直後
+            const textTo = marks[1].from; // `]` の直前
+            const urlText = doc.sliceString(url.from, url.to);
+            decorations.push(hide.range(marks[0].from, marks[0].to)); // `[` を隠す
+            if (textTo > textFrom) {
+              decorations.push(
+                Decoration.mark({
+                  class: "cm-md-link",
+                  attributes: { "data-href": urlText },
+                }).range(textFrom, textTo),
+              );
             }
+            decorations.push(hide.range(marks[1].from, marks[3].to)); // `](URL)` を隠す
           }
-          if (urlText && ltFrom >= 0) {
-            local.push(
-              Decoration.mark({
-                class: "cm-md-link",
-                attributes: { "data-href": urlText },
-              }).range(ltFrom, ltTo),
-            );
-          }
-          local.sort((a, b) => a.from - b.from);
-          decorations.push(...local);
           return;
         }
 
