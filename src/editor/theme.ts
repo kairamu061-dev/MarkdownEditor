@@ -59,7 +59,8 @@ export const nordHighlightStyle = HighlightStyle.define([
   },
   { tag: t.link, color: "var(--accent)", textDecoration: "underline" },
   { tag: t.url, color: "var(--accent)" },
-  { tag: t.quote, fontStyle: "italic" },
+  // 引用の斜体は live-preview.ts の .cm-blockquote（QuoteMark 基準）で付与する。
+  // t.quote は Lezer の Blockquote ノードにかかり遅延継続行にも及ぶため使わない（BUG-011）
   { tag: t.contentSeparator, color: "var(--border)" },
   { tag: t.processingInstruction, color: "var(--syntax-mark)" },
   { tag: t.labelName, color: "var(--accent-secondary)" },
