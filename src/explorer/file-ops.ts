@@ -3,6 +3,7 @@ import {
   getCurrentPath,
   openNote,
   refreshTree,
+  remapAfterRename,
   setContextMenuHandler,
   setCurrentPath,
   showStatus,
@@ -84,13 +85,14 @@ function startRename(path: string, isDir: boolean, row: HTMLElement): void {
   input.select();
 
   let finished = false;
+  let submitting = false;
   const cancel = () => {
     if (finished) return;
     finished = true;
     void refreshTree();
   };
   const confirm = async () => {
-    if (finished) return;
+    if (finished || submitting) return;
     const name = input.value.trim();
     if (name === "" || name.includes("/") || name.includes("\\")) return;
     if (name === baseName) {
@@ -98,12 +100,15 @@ function startRename(path: string, isDir: boolean, row: HTMLElement): void {
       return;
     }
     const to = isDir ? `${dir}${name}` : `${dir}${name}.md`;
+    submitting = true;
     try {
       await renamePath(path, to);
       finished = true;
-      if (!isDir && getCurrentPath() === path) setCurrentPath(to);
+      // ノート自身・フォルダ配下で開いているノートのパスと折りたたみ状態を追随（BUG-013）
+      remapAfterRename(path, to);
       await refreshTree();
     } catch (e) {
+      submitting = false; // 失敗時は入力を残して再試行させる
       if (String(e).includes("already exists")) {
         showStatus("同名の項目があります");
       } else {
@@ -113,13 +118,24 @@ function startRename(path: string, isDir: boolean, row: HTMLElement): void {
       }
     }
   };
+  // 画面外クリック（blur）は、妥当で変更ありなら確定・それ以外はキャンセルする（BUG-016）。
+  // 従来は無条件キャンセルで、入力した名前が黙って破棄されていた
+  const commitFromBlur = () => {
+    if (finished || submitting) return;
+    const name = input.value.trim();
+    if (name !== "" && name !== baseName && !name.includes("/") && !name.includes("\\")) {
+      void confirm();
+    } else {
+      cancel();
+    }
+  };
 
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") void confirm();
     if (e.key === "Escape") cancel();
     e.stopPropagation();
   });
-  input.addEventListener("blur", cancel);
+  input.addEventListener("blur", commitFromBlur);
 }
 
 // --- 削除（二段階確認・ノート / フォルダ） ---
