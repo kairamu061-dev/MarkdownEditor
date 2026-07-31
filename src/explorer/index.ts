@@ -77,7 +77,11 @@ async function flushSave(): Promise<void> {
     await writeNote(path, content);
   } catch (e) {
     console.error("write_note failed:", e);
-    state.pendingContent = content; // 保持して次の変更で再試行
+    // 保存中に別ノートへ切り替わっていた場合、この content を pendingContent に戻すと
+    // 次回保存で別ノートを誤上書きする。保存対象がまだ現在のノートのときだけ保持する（BUG-014）
+    if (state.currentPath === path) {
+      state.pendingContent = content; // 保持して次の変更で再試行
+    }
     showStatus("保存に失敗しました");
   }
 }
@@ -108,15 +112,22 @@ export async function refreshTree(): Promise<void> {
   }
 }
 
-/** wikilink 用。`名前.md` に一致する最初のノートを開く（大文字小文字無視・深さ優先） */
+/** wikilink 用。名前に一致する最初のノートを開く（大文字小文字無視・深さ優先）。
+ *  `note` / `note.md` / `sub/note` / `sub/note.md` を許容（BUG-015） */
 export async function openNoteByName(name: string): Promise<void> {
-  const wanted = `${name}.md`.toLowerCase();
+  // 既に .md 付きなら二重補完しない。区切りは / に正規化してパス比較にも使う
+  const rel = /\.md$/i.test(name) ? name : `${name}.md`;
+  const wantedName = rel.toLowerCase(); // ファイル名だけ指定されたとき用
+  const wantedPath = rel.replace(/\\/g, "/").toLowerCase(); // サブフォルダ付き指定用
   const find = (nodes: TreeNode[]): string | null => {
     for (const node of nodes) {
       if (node.isDir) {
         const hit = find(node.children);
         if (hit) return hit;
-      } else if (node.name.toLowerCase() === wanted) {
+      } else if (
+        node.name.toLowerCase() === wantedName ||
+        node.path.replace(/\\/g, "/").toLowerCase() === wantedPath
+      ) {
         return node.path;
       }
     }
@@ -215,8 +226,20 @@ function makeDropTarget(row: HTMLElement, toDir: string): void {
 /** 移動に伴い、開閉状態と現在ノートのパスを新しい場所へ付け替える */
 function remapPaths(from: string, toDir: string): void {
   const newPath = (toDir ? `${toDir}/` : "") + basename(from);
+  remapPrefix(from, newPath);
+}
+
+/** 旧パス `from`（自身とその配下）を新パス `to` に付け替える。
+ *  フォルダのリネーム時に、配下で開いているノートや折りたたみ状態も追随させる（BUG-013） */
+export function remapAfterRename(from: string, to: string): void {
+  remapPrefix(from, to);
+  renderTree();
+}
+
+/** `from`（完全一致）と `from/` 始まり（配下）を `to` プレフィックスへ置き換える共通処理 */
+function remapPrefix(from: string, to: string): void {
   const remap = (p: string): string =>
-    p === from ? newPath : p.startsWith(`${from}/`) ? newPath + p.slice(from.length) : p;
+    p === from ? to : p.startsWith(`${from}/`) ? to + p.slice(from.length) : p;
   state.collapsedDirs = new Set([...state.collapsedDirs].map(remap));
   if (state.currentPath !== null) state.currentPath = remap(state.currentPath);
 }
