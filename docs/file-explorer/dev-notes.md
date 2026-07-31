@@ -14,7 +14,13 @@
 
 | 問題 | 対処 |
 |------|------|
-|      |      |
+| フォルダリネームで配下の開いているノートのパスが追随せず保存不能（BUG-013、実機検出） | `index.ts` に `remapAfterRename(from,to)` を追加し、`startRename` 確定時にノート/フォルダ問わず `currentPath`・`collapsedDirs` を旧→新プレフィックスで付け替え。DnD 用 `remapPaths` と `remapPrefix` に共通化（`2ecbe00`） |
+| 保存失敗中のノート切替で別ノートを誤上書きしうる（BUG-014、コードレビュー 2.1） | `flushSave` の catch を `state.currentPath === path` のときだけ `pendingContent` 復元にガード。切替後は復元しない |
+| ウィキリンク `[[note.md]]`・`[[sub/note]]` が開けない（BUG-015、コードレビュー 3.2） | `openNoteByName` を「末尾 `.md` なら二重補完しない」「`node.name` に加え `/` 正規化した `node.path` とも照合」に変更 |
+| リネーム入力の blur で入力名が黙って破棄（BUG-016、コードレビュー 3.3） | blur を `commitFromBlur`（妥当かつ変更ありなら確定・他はキャンセル）に変更。`submitting` フラグで Enter/blur の二重確定を防止 |
+
+> 2026-07-31 のコードレビュー（`tmp/コードレビュー結果.md`）指摘のうち妥当な 4 件（3.1/2.1/3.2/3.3）を修正。
+> 指摘 4.1（table-preview の全文スキャン）は観察は妥当だが、提案の「ViewPlugin で可視範囲」は block デコレーションが plugin から提供不可のため不成立。別設計が要るため今回は見送り（低優先）。
 
 ## 設計からの変更点
 
