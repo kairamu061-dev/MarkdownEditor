@@ -27,7 +27,7 @@
 | [BUG-010](./tickets/BUG-010.md) | 引用行の改行→Backspace の直後に日本語 IME 変換確定すると文字化けする | editor/core | Closed |
 | [BUG-011](./tickets/BUG-011.md) | `>` を消した引用の遅延継続行が引用として振る舞う（斜体が残る・Enter で `> ` が復活） | editor/live-preview | Closed |
 | [BUG-012](./tickets/BUG-012.md) | インラインリンク `[text](url)` をクリックしてもノートへ遷移しない | editor/live-preview | Closed |
-| [BUG-013](./tickets/BUG-013.md) | フォルダをリネームすると配下で開いているノートが保存できなくなる | file-explorer/file-ops | Fixed |
-| [BUG-014](./tickets/BUG-014.md) | 保存失敗中のノート切替で失敗内容が別ノートを誤上書きしうる | file-explorer | Fixed |
-| [BUG-015](./tickets/BUG-015.md) | ウィキリンク `[[note.md]]`・`[[sub/note]]` が開けない | file-explorer | Fixed |
-| [BUG-016](./tickets/BUG-016.md) | リネーム入力の blur で入力名が黙って破棄される | file-explorer/file-ops | Fixed |
+| [BUG-013](./tickets/BUG-013.md) | フォルダをリネームすると配下で開いているノートが保存できなくなる | file-explorer/file-ops | Closed |
+| [BUG-014](./tickets/BUG-014.md) | 保存失敗中のノート切替で失敗内容が別ノートを誤上書きしうる | file-explorer | Closed |
+| [BUG-015](./tickets/BUG-015.md) | ウィキリンク `[[note.md]]`・`[[sub/note]]` が開けない | file-explorer | Closed |
+| [BUG-016](./tickets/BUG-016.md) | リネーム入力の blur で入力名が黙って破棄される | file-explorer/file-ops | Closed |
