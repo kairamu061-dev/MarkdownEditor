@@ -15,10 +15,10 @@ const editor = mountEditor(document.getElementById("main-content")!, {
   extraExtensions: [
     livePreview((href) => {
       if (/^https?:\/\//i.test(href)) return; // 外部 URL は未対応
-      // 相対パスのノートリンク: .md を除いてファイル名で検索
-      const name = href.replace(/\.md$/i, "").replace(/^\.\//, "");
-      const base = name.split(/[\\/]/).pop() ?? name;
-      void openNoteByName(base);
+      // 相対パスのノートリンク: 先頭 ./ を除いてそのまま解決に渡す。
+      // フォルダを捨てず openNoteByName のパス照合に委ねる（ウィキリンクと同一挙動・BUG-019）
+      const name = href.replace(/^\.\//, "");
+      void openNoteByName(name);
     }),
     codeBlockStyle(),
     tablePreview(),

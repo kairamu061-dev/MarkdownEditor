@@ -6,9 +6,25 @@ import {
 } from "@codemirror/view";
 import { type EditorState, type Extension, type Range, StateField } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
+import { type SyntaxNode } from "@lezer/common";
 
 function touchesSelection(state: EditorState, from: number, to: number): boolean {
   return state.selection.ranges.some((r) => r.to >= from && r.from <= to);
+}
+
+/** pos が Table ノード内なら、そのテーブルの識別子（node.from）を返す。範囲外なら null。
+ *  文書全体を走査せず祖先を辿るだけなので軽い。境界を取りこぼさないよう両側の bias を見る（BUG-018） */
+function tableAt(state: EditorState, pos: number): number | null {
+  for (const side of [-1, 1] as const) {
+    for (
+      let node: SyntaxNode | null = syntaxTree(state).resolveInner(pos, side);
+      node;
+      node = node.parent
+    ) {
+      if (node.name === "Table") return node.from;
+    }
+  }
+  return null;
 }
 
 function escapeHtml(s: string): string {
@@ -152,8 +168,16 @@ const tableDecoField = StateField.define<DecorationSet>({
     return buildDecorations(state);
   },
   update(deco, tr) {
-    if (tr.docChanged || !tr.newSelection.eq(tr.startState.selection)) {
-      return buildDecorations(tr.state);
+    if (tr.docChanged) return buildDecorations(tr.state);
+    // 選択変更は「カーソルがテーブル範囲に出入りしたとき」だけ再構築する（BUG-018）。
+    // 毎カーソル移動で全文走査＋全 TableWidget 再構築が走るのを避ける。複数選択は稀なので安全側で再構築
+    if (!tr.newSelection.eq(tr.startState.selection)) {
+      const crossed =
+        tr.startState.selection.ranges.length !== 1 ||
+        tr.state.selection.ranges.length !== 1 ||
+        tableAt(tr.startState, tr.startState.selection.main.head) !==
+          tableAt(tr.state, tr.state.selection.main.head);
+      if (crossed) return buildDecorations(tr.state);
     }
     return deco.map(tr.changes);
   },
