@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { EditorHandle } from "../editor";
 import { getSettings } from "../settings/api";
 import {
@@ -39,6 +40,13 @@ const state: ExplorerState = {
 let container: HTMLElement;
 let editor: EditorHandle;
 let statusTimer: number | null = null;
+
+/** container を空にするが、表示中のステータス通知は巻き添えにしない（BUG-022） */
+function clearContainerKeepStatus(): void {
+  const status = container.querySelector(".explorer-status");
+  container.textContent = "";
+  if (status) container.appendChild(status);
+}
 
 export function showStatus(message: string): void {
   let status = container.querySelector<HTMLElement>(".explorer-status");
@@ -212,7 +220,10 @@ function makeDropTarget(row: HTMLElement, toDir: string): void {
     if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
     row.classList.add("drop-target");
   });
-  row.addEventListener("dragleave", () => row.classList.remove("drop-target"));
+  row.addEventListener("dragleave", (e) => {
+    // 行内の子要素（chevron/label）へ移っただけの dragleave では消さない（BUG-022）
+    if (!row.contains(e.relatedTarget as Node)) row.classList.remove("drop-target");
+  });
   row.addEventListener("drop", (e) => {
     row.classList.remove("drop-target");
     if (!canDrop(toDir)) return;
@@ -316,7 +327,7 @@ function renderTree(): void {
 
   let tree = container.querySelector<HTMLElement>(".tree");
   if (!tree) {
-    container.textContent = "";
+    clearContainerKeepStatus();
     const treeEl = document.createElement("div");
     treeEl.className = "tree";
     // ツリー空白部（行の外）だけをルート（""）へのドロップ先・右クリック対象にする。
@@ -348,7 +359,7 @@ function renderTree(): void {
 }
 
 function renderEmpty(): void {
-  container.textContent = "";
+  clearContainerKeepStatus();
   const empty = document.createElement("div");
   empty.className = "vault-empty";
   const button = document.createElement("button");
@@ -548,6 +559,25 @@ export function initExplorer(el: HTMLElement, editorHandle: EditorHandle): void 
       closeSwitcher();
     }
   });
+
+  // ウィンドウを閉じる前に、debounce 待ちの未保存編集を確定する（BUG-017）。
+  // ✕ ボタン（appWindow.close()）も OS の閉じる操作も CloseRequested を通るので 1 箇所で拾える
+  try {
+    const appWindow = getCurrentWindow();
+    void appWindow.onCloseRequested(async (event) => {
+      event.preventDefault();
+      try {
+        if (state.currentPath !== null) {
+          state.pendingContent = editor.getContent();
+          await flushSave();
+        }
+      } finally {
+        await appWindow.destroy();
+      }
+    });
+  } catch {
+    // Tauri ランタイム外（ブラウザ単体プレビュー等）では何もしない
+  }
 
   initFileOps();
   renderEmpty();

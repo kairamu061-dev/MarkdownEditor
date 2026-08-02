@@ -34,7 +34,11 @@ pub fn save(path: &Path, settings: &Settings) -> Result<(), String> {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
     let json = serde_json::to_string_pretty(settings).map_err(|e| e.to_string())?;
-    fs::write(path, json).map_err(|e| e.to_string())
+    // 一時ファイルに書いてから rename する（アトミック置換）。書き込み中にプロセスが落ちても
+    // 既存の settings.json が破損せず、lastVault / recentVaults を失わない（BUG-020）
+    let tmp = path.with_extension("json.tmp");
+    fs::write(&tmp, json).map_err(|e| e.to_string())?;
+    fs::rename(&tmp, path).map_err(|e| e.to_string())
 }
 
 pub fn settings_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {

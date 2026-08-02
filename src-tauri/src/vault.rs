@@ -39,7 +39,32 @@ fn resolve_in_vault(root: &Path, rel: &str) -> Result<PathBuf, String> {
             _ => return Err("path is outside the vault".into()),
         }
     }
+    guard_within_vault(root, &out)?;
     Ok(out)
+}
+
+/// `out` が（シンボリックリンクを解決しても）保管庫ルート配下に収まることを確認する（BUG-021）。
+/// 未存在パス（新規作成）に対応するため、実在する最深の祖先を canonicalize して比較する。
+/// root を canonicalize できない場合（テストの仮想パス等）は字句検査に委ねて no-op にする。
+fn guard_within_vault(root: &Path, out: &Path) -> Result<(), String> {
+    let Ok(root_real) = root.canonicalize() else {
+        return Ok(());
+    };
+    let mut probe: &Path = out;
+    let real = loop {
+        if let Ok(canon) = probe.canonicalize() {
+            break canon;
+        }
+        match probe.parent() {
+            Some(parent) => probe = parent,
+            None => return Ok(()),
+        }
+    };
+    if real.starts_with(&root_real) {
+        Ok(())
+    } else {
+        Err("path is outside the vault".into())
+    }
 }
 
 /// 移動先の絶対パスを計算し、フォルダを自身の子孫へ移す不正な移動を弾く。
@@ -78,16 +103,22 @@ fn build_tree(dir: &Path, rel_prefix: &str) -> Result<Vec<TreeNode>, String> {
         if name.starts_with('.') {
             continue;
         }
+        // file_type() はシンボリックリンクを辿らない。リンクはスキップして、祖先を指す
+        // ディレクトリリンクによる build_tree の無限再帰と、保管庫外の露出を防ぐ（BUG-021）
+        let file_type = entry.file_type().map_err(|e| e.to_string())?;
+        if file_type.is_symlink() {
+            continue;
+        }
         let path = entry.path();
         let rel = if rel_prefix.is_empty() {
             name.clone()
         } else {
             format!("{rel_prefix}/{name}")
         };
-        if path.is_dir() {
+        if file_type.is_dir() {
             let children = build_tree(&path, &rel)?;
             nodes.push(TreeNode { name, path: rel, is_dir: true, children });
-        } else if ensure_md(&path).is_ok() {
+        } else if file_type.is_file() && ensure_md(&path).is_ok() {
             nodes.push(TreeNode { name, path: rel, is_dir: false, children: Vec::new() });
         }
     }
@@ -378,6 +409,46 @@ mod tests {
             move_destination(from, true, dest_dir).unwrap(),
             PathBuf::from("/vault/c/a")
         );
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn resolve_rejects_symlink_escape() {
+        use std::os::unix::fs::symlink;
+        let root = std::env::temp_dir().join(format!("vault-symesc-{}", std::process::id()));
+        let outside = std::env::temp_dir().join(format!("outside-symesc-{}", std::process::id()));
+        fs::create_dir_all(&root).unwrap();
+        fs::create_dir_all(&outside).unwrap();
+        symlink(&outside, root.join("link")).unwrap(); // 保管庫内から外部を指すリンク
+        fs::create_dir_all(root.join("sub")).unwrap();
+
+        assert!(resolve_in_vault(&root, "link/x.md").is_err()); // リンク経由は拒否
+        assert!(resolve_in_vault(&root, "sub/x.md").is_ok()); // 通常のサブパスは許可
+
+        fs::remove_dir_all(&root).ok();
+        fs::remove_dir_all(&outside).ok();
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn build_tree_skips_symlinks() {
+        use std::os::unix::fs::symlink;
+        let dir = std::env::temp_dir().join(format!("vault-symtree-{}", std::process::id()));
+        fs::create_dir_all(dir.join("real")).unwrap();
+        fs::write(dir.join("real/note.md"), "").unwrap();
+        fs::write(dir.join("target.md"), "").unwrap();
+        symlink(&dir, dir.join("loop")).unwrap(); // 祖先を指す = 辿ると無限再帰
+        symlink(dir.join("target.md"), dir.join("alias.md")).unwrap();
+
+        // 無限再帰せず完了し、シンボリックリンクは一覧に出ない
+        let tree = build_tree(&dir, "").unwrap();
+        let names: Vec<&str> = tree.iter().map(|n| n.name.as_str()).collect();
+        assert!(names.contains(&"real"));
+        assert!(names.contains(&"target.md"));
+        assert!(!names.contains(&"loop"));
+        assert!(!names.contains(&"alias.md"));
+
+        fs::remove_dir_all(&dir).ok();
     }
 
     #[test]
