@@ -34,10 +34,24 @@ tasklist /fi "imagename eq markdown-editor.exe" 2>nul | find /i "markdown-editor
   taskkill /f /im markdown-editor.exe >nul 2>nul
 )
 
-if not exist node_modules (
-  echo === 依存パッケージを導入します（初回のみ） ===
-  call npm install
-  if errorlevel 1 exit /b 1
+rem node_modules の有無だけでは不十分。Linux 側（devcontainer）で導入されたツリーが
+rem 残っていると .cmd シムもネイティブバイナリ（tauri / rollup / esbuild の win32 版）も
+rem 無く、npm run tauri が「コマンドが見つかりません」で落ちる（BUG-023）。
+rem Windows 用インストールでのみ作られる .cmd シムをマーカーに判定する。
+if not exist "node_modules\.bin\tauri.cmd" (
+  if exist node_modules (
+    echo === node_modules が Windows 用ではないため導入し直します ===
+    echo     ※他 OS 側で導入されたツリーが残っています。数分かかります。
+  ) else (
+    echo === 依存パッケージを導入します（初回のみ） ===
+  )
+  rem npm install だとロックファイル充足済みと判断され win32 向け optional dependency を
+  rem 確実に補完しないため、node_modules を作り直す npm ci を使う。
+  call npm ci
+  if errorlevel 1 (
+    echo [NG] 依存パッケージの導入に失敗しました。
+    exit /b 1
+  )
 )
 
 echo.
