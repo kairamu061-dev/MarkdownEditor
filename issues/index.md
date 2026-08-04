@@ -37,5 +37,5 @@
 | [BUG-020](./tickets/BUG-020.md) | `settings.json` の書き込みが非アトミックで設定が消えうる | file-explorer | Fixed |
 | [BUG-021](./tickets/BUG-021.md) | シンボリックリンクで無限再帰クラッシュ / 保管庫外アクセス | file-explorer | Fixed |
 | [BUG-022](./tickets/BUG-022.md) | ドロップ先ハイライトのちらつき / ステータス通知が再描画で消える | file-explorer/tree-view | Fixed |
-| [BUG-023](./tickets/BUG-023.md) | verify-build.bat が Linux 側の node_modules を再利用してビルド不能 | tooling | Fixed |
+| [BUG-023](./tickets/BUG-023.md) | verify-build.bat が Linux 側の node_modules を再利用してビルド不能 | tooling | Closed |
 | [BUG-024](./tickets/BUG-024.md) | アイコンを差し替えても exe のアイコンが更新されない | tooling | Closed |
