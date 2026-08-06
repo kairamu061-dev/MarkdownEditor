@@ -14,7 +14,7 @@
 - [x] T-8 `src/explorer/file-ops.ts`: `startRename` の確定前に `flushSave` を追加（既存の同種リスクを塞ぐ）
 - [~] T-9 `npm run build` の確認 — `tsc --noEmit` は通過。`vite build` は devcontainer で実行不可（BUG-023 の制約）のため Windows 実機で確認
 - [x] T-10 test-cases.md を作成し、devcontainer で確認できる範囲を実施
-- [ ] T-11 Windows 実機での確認依頼を作成
+- [x] T-11 Windows 実機での確認依頼を作成（`tmp/動作確認/動作確認チェックリスト.md`）
 
 ## 依存関係
 
