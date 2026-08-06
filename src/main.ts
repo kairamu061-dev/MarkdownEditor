@@ -5,7 +5,14 @@ import { livePreview } from "./editor/live-preview";
 import { codeBlockStyle } from "./editor/code-block";
 import { tablePreview } from "./editor/table-preview";
 import { wikilink } from "./editor/wikilink";
-import { initExplorer, explorerDocChanged, openNoteByName } from "./explorer";
+import { mountInlineTitle } from "./editor/inline-title";
+import {
+  initExplorer,
+  explorerDocChanged,
+  openNoteByName,
+  onCurrentNoteChanged,
+  renameCurrentNote,
+} from "./explorer";
 import { initSettings } from "./settings";
 
 initTitlebar();
@@ -27,4 +34,11 @@ const editor = mountEditor(document.getElementById("main-content")!, {
   onDocChanged: explorerDocChanged,
 });
 editor.focus();
+
+const noteTitle = mountInlineTitle(document.getElementById("note-title")!, {
+  onRename: (name) => renameCurrentNote(name),
+  onDone: () => editor.focus(),
+});
+onCurrentNoteChanged((path) => noteTitle.setPath(path));
+
 initExplorer(document.getElementById("sidebar-content")!, editor);
