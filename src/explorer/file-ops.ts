@@ -1,5 +1,6 @@
 import { createFolder, createNote, deletePath, renamePath } from "./api";
 import {
+  flushPendingSave,
   getCurrentPath,
   openNote,
   refreshTree,
@@ -102,6 +103,9 @@ function startRename(path: string, isDir: boolean, row: HTMLElement): void {
     const to = isDir ? `${dir}${name}` : `${dir}${name}.md`;
     submitting = true;
     try {
+      // 保留中の自動保存（700ms debounce）を先に確定させる。順序が逆だと、
+      // 直前の本文入力が旧パスへ書き戻されてリネーム後のノートから消える
+      await flushPendingSave();
       await renamePath(path, to);
       finished = true;
       // ノート自身・フォルダ配下で開いているノートのパスと折りたたみ状態を追随（BUG-013）

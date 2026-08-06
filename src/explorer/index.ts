@@ -9,6 +9,7 @@ import {
   pickVault,
   readNote,
   removeRecentVault,
+  renamePath,
   writeNote,
   type TreeNode,
   type VaultInfo,
@@ -40,6 +41,23 @@ const state: ExplorerState = {
 let container: HTMLElement;
 let editor: EditorHandle;
 let statusTimer: number | null = null;
+
+// --- 開いているノートの変化通知（inline-title 向け） ---
+
+const currentNoteSubscribers: Array<(path: string | null) => void> = [];
+
+/** currentPath が変わったときに呼ばれる購読を登録する。登録時点の値で即座に 1 回呼ぶ */
+export function onCurrentNoteChanged(cb: (path: string | null) => void): void {
+  currentNoteSubscribers.push(cb);
+  cb(state.currentPath);
+}
+
+/** `state.currentPath` の唯一の代入経路。ここを通さないと表示追随が漏れる */
+function setCurrentPathInternal(path: string | null): void {
+  if (state.currentPath === path) return;
+  state.currentPath = path;
+  for (const cb of currentNoteSubscribers) cb(path);
+}
 
 /** container を空にするが、表示中のステータス通知は巻き添えにしない（BUG-022） */
 function clearContainerKeepStatus(): void {
@@ -102,12 +120,57 @@ export function getCurrentPath(): string | null {
 
 /** リネーム追随用。null はスクラッチ扱いに戻す（file-ops の削除時） */
 export function setCurrentPath(path: string | null): void {
-  state.currentPath = path;
+  setCurrentPathInternal(path);
   if (path === null) {
     state.pendingContent = null;
     editor.setContent("");
   }
   renderTree();
+}
+
+/** 保留中の自動保存を確定する。リネーム前に呼ぶ（inline-title / file-ops 向けに公開） */
+export function flushPendingSave(): Promise<void> {
+  return flushSave();
+}
+
+/**
+ * 開いているノートを新しいベース名（拡張子なし）へリネームする。成功なら true。
+ *
+ * 先に flushSave するのが要点。自動保存は 700ms の debounce なので、本文入力の直後に
+ * リネームすると保留中の内容が旧パスへ書き戻され、リネーム後のノートから消える。
+ */
+export async function renameCurrentNote(newBaseName: string): Promise<boolean> {
+  const from = state.currentPath;
+  if (from === null) return false;
+
+  const name = newBaseName.trim();
+  if (name === "" || name.includes("/") || name.includes("\\")) return false;
+
+  const dir = from.includes("/") ? from.slice(0, from.lastIndexOf("/") + 1) : "";
+  const to = `${dir}${name}.md`;
+  if (to === from) return true; // 変更なし。成功扱いで表示状態へ戻す
+
+  await flushSave();
+  // 保存に失敗して内容が残っている場合、リネームすると旧パスに未保存分が取り残される
+  if (state.pendingContent !== null) {
+    showStatus("保存できていないため名前を変更できません");
+    return false;
+  }
+
+  try {
+    await renamePath(from, to);
+  } catch (e) {
+    if (String(e).includes("already exists")) {
+      showStatus("同名の項目があります");
+    } else {
+      console.error("rename_path failed:", e);
+      showStatus("操作に失敗しました");
+    }
+    return false;
+  }
+  remapAfterRename(from, to);
+  await refreshTree();
+  return true;
 }
 
 export async function refreshTree(): Promise<void> {
@@ -168,7 +231,7 @@ export async function openNote(relPath: string): Promise<void> {
   await flushSave();
   try {
     const content = await readNote(relPath);
-    state.currentPath = relPath;
+    setCurrentPathInternal(relPath);
     state.pendingContent = null;
     editor.setContent(content);
     editor.focus();
@@ -252,7 +315,7 @@ function remapPrefix(from: string, to: string): void {
   const remap = (p: string): string =>
     p === from ? to : p.startsWith(`${from}/`) ? to + p.slice(from.length) : p;
   state.collapsedDirs = new Set([...state.collapsedDirs].map(remap));
-  if (state.currentPath !== null) state.currentPath = remap(state.currentPath);
+  if (state.currentPath !== null) setCurrentPathInternal(remap(state.currentPath));
 }
 
 async function doMove(from: string, toDir: string): Promise<void> {
@@ -373,7 +436,7 @@ function renderEmpty(): void {
 /** 別の保管庫へ切り替える。開いていたノートと開閉状態はリセットする */
 function applyVault(info: VaultInfo): void {
   state.vault = info;
-  state.currentPath = null;
+  setCurrentPathInternal(null);
   state.pendingContent = null;
   state.collapsedDirs = new Set();
   editor.setContent("");

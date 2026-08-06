@@ -160,4 +160,56 @@ body {
 .main-content {
   flex: 1;
   overflow: hidden;
+  min-height: 0;
+}
+
+/* --- ノート名（editor/inline-title） --- */
+
+.note-title {
+  flex: none;
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.note-title-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-strong);
+  cursor: text;
+  /* 表示と入力で行の高さを揃え、編集開始でレイアウトが飛ばないようにする */
+  line-height: 1.4;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-title-label:hover {
+  background-color: var(--bg-hover);
+}
+
+/* スクラッチ文書（未保存）。淡色 + クリックしても反応しない */
+.note-title-label.note-title-empty {
+  color: var(--nord3);
+  cursor: default;
+}
+
+.note-title-label.note-title-empty:hover {
+  background-color: transparent;
+}
+
+.note-title-input {
+  width: 100%;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 2px 4px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background-color: var(--bg-primary);
+  color: var(--text-strong);
+  font-family: inherit;
+  outline: none;
 }
