@@ -31,11 +31,11 @@
 | [BUG-014](./tickets/BUG-014.md) | 保存失敗中のノート切替で失敗内容が別ノートを誤上書きしうる | file-explorer | Closed |
 | [BUG-015](./tickets/BUG-015.md) | ウィキリンク `[[note.md]]`・`[[sub/note]]` が開けない | file-explorer | Closed |
 | [BUG-016](./tickets/BUG-016.md) | リネーム入力の blur で入力名が黙って破棄される | file-explorer/file-ops | Closed |
-| [BUG-017](./tickets/BUG-017.md) | ウィンドウを閉じると最大 700ms 分の編集が保存されず消える | app-shell | Fixed |
-| [BUG-018](./tickets/BUG-018.md) | テーブル装飾がカーソル移動のたびに全文書を再走査する | editor/live-preview | Fixed |
-| [BUG-019](./tickets/BUG-019.md) | インラインリンクだけサブフォルダ指定が効かない | editor/live-preview | Fixed |
-| [BUG-020](./tickets/BUG-020.md) | `settings.json` の書き込みが非アトミックで設定が消えうる | file-explorer | Fixed |
-| [BUG-021](./tickets/BUG-021.md) | シンボリックリンクで無限再帰クラッシュ / 保管庫外アクセス | file-explorer | Fixed |
-| [BUG-022](./tickets/BUG-022.md) | ドロップ先ハイライトのちらつき / ステータス通知が再描画で消える | file-explorer/tree-view | Fixed |
+| [BUG-017](./tickets/BUG-017.md) | ウィンドウを閉じると最大 700ms 分の編集が保存されず消える | app-shell | Closed |
+| [BUG-018](./tickets/BUG-018.md) | テーブル装飾がカーソル移動のたびに全文書を再走査する | editor/live-preview | Closed |
+| [BUG-019](./tickets/BUG-019.md) | インラインリンクだけサブフォルダ指定が効かない | editor/live-preview | Closed |
+| [BUG-020](./tickets/BUG-020.md) | `settings.json` の書き込みが非アトミックで設定が消えうる | file-explorer | Closed |
+| [BUG-021](./tickets/BUG-021.md) | シンボリックリンクで無限再帰クラッシュ / 保管庫外アクセス | file-explorer | Closed |
+| [BUG-022](./tickets/BUG-022.md) | ドロップ先ハイライトのちらつき / ステータス通知が再描画で消える | file-explorer/tree-view | Closed |
 | [BUG-023](./tickets/BUG-023.md) | verify-build.bat が Linux 側の node_modules を再利用してビルド不能 | tooling | Closed |
 | [BUG-024](./tickets/BUG-024.md) | アイコンを差し替えても exe のアイコンが更新されない | tooling | Closed |
