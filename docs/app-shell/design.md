@@ -55,7 +55,8 @@ interface ShellState {
 
 ```typescript
 // src/shell/sidebar.ts
-export function initSidebar(root: HTMLElement): void; // トグルボタンと Ctrl+B を配線
+// ☰ ボタンは #app の外（タイトルバー内）にあるため document から引く。root は取らない（BUG-007）
+export function initSidebar(): void; // トグルボタンと Ctrl+B を配線
 export function toggleSidebar(): void;
 
 // src/shell/titlebar.ts

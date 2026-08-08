@@ -5,6 +5,7 @@
 - [vault](./vault/design.md) — Rust 側の保管庫状態管理とファイル I/O コマンド
 - [tree-view](./tree-view/design.md) — サイドバーのファイルツリー UI とエディタ接続・保存
 - [file-ops](./file-ops/design.md) — ノートの新規作成・リネーム・削除
+- [vault-switch](./vault-switch/design.md) — フッタの保管庫スイッチャ（最近開いた保管庫の切り替え）
 
 ## 横断事項
 

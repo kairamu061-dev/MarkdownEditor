@@ -27,7 +27,11 @@ src/settings/
 ```typescript
 // api.ts — store の Settings と同型
 interface EditorSettings { fontFamily: string | null; fontSize: number | null }
-interface Settings { lastVault: string | null; editor: EditorSettings }
+interface Settings {
+  lastVault: string | null;
+  recentVaults: string[];   // vault-switch が使用。ui では読み書きしない
+  editor: EditorSettings;
+}
 
 // index.ts — フォントプリセット（spec.md の表と同一。value は CSS font-family 文字列）
 const FONT_OPTIONS: ReadonlyArray<{ label: string; value: string | null }>;

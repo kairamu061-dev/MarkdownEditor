@@ -38,7 +38,7 @@ export async function openNoteByName(name: string): Promise<void>;
 export function wikilink(onOpen: (name: string) => void): Extension;
 
 // 使用側（src/main.ts）
-mountEditor(el, { extraExtensions: [livePreview(), wikilink((n) => void openNoteByName(n))] });
+mountEditor(el, { extraExtensions: [/* 他の拡張 */, wikilink((n) => void openNoteByName(n))] });
 ```
 
 ## 依存関係
