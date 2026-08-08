@@ -45,6 +45,11 @@ export function initExplorer(container: HTMLElement, editor: EditorHandle): void
 // 内部: openVault / renderTree / openNote / scheduleSave / saveNow / showStatus
 ```
 
+`state.currentPath` への代入は内部関数 `setCurrentPathInternal` に集約し、そこで購読者へ通知する
+（`openNote` / `remapPrefix` / `applyVault` / `setCurrentPath` の 4 箇所から呼ぶ）。
+代入経路を 1 本にしておかないと、追随する側（inline-title）の表示が漏れる。
+購読 API は [editor/inline-title](../../editor/inline-title/design.md) を参照。
+
 ## 依存関係
 
 | ライブラリ / サービス | 用途 |
