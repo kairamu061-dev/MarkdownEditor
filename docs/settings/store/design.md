@@ -46,7 +46,7 @@ pub fn save(path: &Path, s: &Settings) -> Result<(), String>;
 pub fn settings_path(app: &AppHandle) -> Result<PathBuf, String>;
 
 // コマンド
-#[tauri::command] fn get_settings(app) -> Settings;
+#[tauri::command] fn get_settings(app) -> Result<Settings, String>; // Err は設定ディレクトリ解決の失敗のみ
 #[tauri::command] fn save_settings(app, settings: Settings) -> Result<(), String>;
 ```
 

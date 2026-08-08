@@ -12,7 +12,7 @@
 
 ```
 src/editor/
-└── live-preview.ts   # livePreview(): Extension を公開。core へは main.ts から注入
+└── live-preview.ts   # livePreview(onLinkClick): Extension を公開。core へは main.ts から注入
 ```
 
 - `ViewPlugin` が `docChanged` / `selectionSet` / `viewportChanged` のたびに可視範囲の構文木を走査し、
@@ -38,10 +38,18 @@ src/editor/
 
 ```typescript
 // src/editor/live-preview.ts
-export function livePreview(): Extension;
+/** onLinkClick: インラインリンク `[text](href)` のクリック時に href を渡して呼ぶ（BUG-012） */
+export function livePreview(onLinkClick: (href: string) => void): Extension;
 
-// 使用側（src/main.ts）
-mountEditor(el, { extraExtensions: [livePreview()] });
+// 使用側（src/main.ts）— ノートの解決は editor 側に持たせず呼び出し元へ委ねる
+mountEditor(el, {
+  extraExtensions: [
+    livePreview((href) => {
+      if (/^https?:\/\//i.test(href)) return;   // 外部 URL は未対応
+      void openNoteByName(href.replace(/^\.\//, ""));  // フォルダを捨てない（BUG-019）
+    }),
+  ],
+});
 ```
 
 ## 依存関係
