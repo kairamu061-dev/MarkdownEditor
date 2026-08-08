@@ -14,6 +14,7 @@
   - [live-preview](./editor/live-preview/overview.md)
   - [code-highlight](./editor/code-highlight/overview.md)
   - [wikilink](./editor/wikilink/overview.md)
+  - [inline-title](./editor/inline-title/overview.md)
 - [file-explorer](./file-explorer/overview.md)
   - [vault](./file-explorer/vault/overview.md)
   - [tree-view](./file-explorer/tree-view/overview.md)
@@ -23,4 +24,3 @@
   - [store](./settings/store/overview.md)
   - [vault-restore](./settings/vault-restore/overview.md)
   - [ui](./settings/ui/overview.md)
-  - [inline-title](./editor/inline-title/overview.md)

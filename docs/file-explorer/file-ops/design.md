@@ -17,6 +17,9 @@ src/explorer/
   編集中パスの取得/更新）を使って実装する。vault コマンドは api.ts 経由
 - コンテキストメニューは単一のシングルトン要素を使い回す（開くたびに項目を再構築）
 - 新規ノートの連番はフロントで既存ツリーから計算し、`create_note` の already exists エラー時は次の連番で 1 回だけ再試行
+- **リネームの確定前に `flushPendingSave()` を await する**。自動保存は 700ms の debounce のため、
+  順序が逆だと直前の本文入力が旧パスへ書き戻され、リネーム後のノートから消える
+  （editor/inline-title のタイトル経由リネームと同じ順序に揃えている）
 
 ## データ構造
 
@@ -38,6 +41,11 @@ export function initFileOps(): void; // index.ts の initExplorer から呼ば�
 export function refreshTree(): Promise<void>;
 export function getCurrentPath(): string | null;
 export function setCurrentPath(path: string | null): void; // null でスクラッチ扱いに戻す
+
+// editor/inline-title のために追加（詳細は ../../editor/inline-title/design.md）
+export function onCurrentNoteChanged(cb: (path: string | null) => void): void;
+export function flushPendingSave(): Promise<void>;   // file-ops もリネーム前に使う
+export function renameCurrentNote(newBaseName: string): Promise<boolean>;
 ```
 
 ## 依存関係
