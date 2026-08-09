@@ -15,6 +15,9 @@ When given an implementation task, follow these rules to prepare documentation b
 5. If subdivision is needed, run `/add-feature <sub-item-path>`
 6. Write content in tasks.md and begin implementation
 
+Steps 3–6 are also spelled out by the `/add-feature` skill, which is where they actually
+land at the right moment. Keep the two in sync when either changes.
+
 ### During implementation
 7. Record decisions, issues, and changes in dev-notes.md as they occur
 8. If skills, permissions, or information are lacking, record the request in dev-notes.md
