@@ -1,11 +1,27 @@
 ---
 name: add-feature
 description: Add a feature area or sub-item to docs/, then walk through the document-writing order that follows. Use when creating a new feature area or sub-item directory.
-argument-hint: <path> (e.g. auth or auth/login)
+argument-hint: [--small] <path> (e.g. auth or auth/login)
 allowed-tools: Bash
 ---
 
-Run the following command:
+## Before running: should this be a sub-item at all?
+
+If **all three** hold, do not create a sub-item — write it as a section of the parent's
+documents and stop here:
+
+- it adds **one** new source file
+- it has **no** UI surface of its own
+- it has **no** data definition or schema of its own
+
+`editor/code-highlight` failed this test: 65 lines in one file, six documents, 188 lines of
+docs. Check the three before scaffolding.
+
+If it clears that but is still small, pass `--small` for a three-document set
+(overview / design / dev-notes) instead of six. `--small` is not the default for anything
+that merely feels minor — it is for what survives the question above.
+
+## Run
 
 ```bash
 bash "${CLAUDE_SKILL_DIR}/add-feature.sh" $ARGUMENTS
@@ -18,6 +34,8 @@ Do not start writing the documents inside this skill — carry the plan out afte
 
 1. **Write in this order: overview.md → spec.md → design.md.** Each one constrains the
    next, so do not write them in parallel or fill in headings speculatively.
+   With `--small` there is no spec.md — the behaviour goes in overview.md, and if it
+   grows into screen transitions or a state table, recreate the sub-item with the full set.
 
 2. **The moment spec.md is finished, evaluate the split rules** in `agent-rules.md`
    before touching design.md. This is the step most often skipped, and skipping it is
@@ -36,7 +54,8 @@ Do not start writing the documents inside this skill — carry the plan out afte
    The parent's design.md and tasks.md then hold only links to sub-items plus
    cross-cutting concerns — but keep the parent's overview.md and spec.md as they are.
 
-3. **Write tasks.md, then begin implementing.**
+3. **Write tasks.md, then begin implementing.** With `--small`, the task list is the
+   Tasks section of overview.md, and test cases go into the **parent's** test-cases.md.
 
 4. **When implementation ends, close the loop:** update the status in tasks.md, and if
    the implementation ended up differing from design.md, **update design.md itself** and
