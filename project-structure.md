@@ -16,14 +16,19 @@ docs/
     ├── test-cases.md
     ├── dev-notes.md
     └── {sub-item}/        # Created as needed per split rules
-        └── ...
+        └── ...            # Six documents, or three for a small sub-item
 
 templates/                 # Document templates for feature areas
 ├── overview.md
 ├── spec.md
 ├── design.md
 ├── tasks.md
-└── dev-notes.md
+├── test-cases.md
+├── dev-notes.md
+└── small/                 # Reduced set for small sub-items (/add-feature --small)
+    ├── overview.md        # absorbs spec.md and tasks.md
+    ├── design.md
+    └── dev-notes.md
 
 issues/                    # Bug ticket management
 ├── index.md               # Ticket list and state legend
@@ -75,6 +80,20 @@ issues/                    # Bug ticket management
 - **Deviations from Design**: Differences from the design document and reasons
 - **Future Work**: Current limitations and items to address later
 - **Requests to User**: Recorded when skills, permissions, or information are lacking
+
+### Small sub-items (three documents)
+
+A sub-item created with `/add-feature --small` gets overview.md, design.md and dev-notes.md
+only. See the split rules in `agent-rules.md` for when this applies.
+
+- **overview.md** carries two extra sections in place of the omitted files: **Behaviour**
+  (what spec.md would have said, as 操作 → 結果 bullets) and **Tasks** (the checklist)
+- **design.md is kept deliberately.** Its Interfaces section is what the mechanical
+  doc/code drift checks read — dropping it would make the sub-item invisible to them
+- Test cases go into the **parent's** test-cases.md, not a local one
+
+If the Behaviour section grows into screen transitions or a state table, the sub-item was
+never small. Recreate it with the full set rather than adding files one at a time.
 
 ### Bug ticket (issues/tickets/BUG-{NNN}.md)
 

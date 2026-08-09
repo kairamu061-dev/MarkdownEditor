@@ -45,10 +45,37 @@ Split if any of the following apply:
 - Can be implemented and tested without the other units existing
 - A separate developer could work on it in parallel
 
-### Exception — integration is only allowed when BOTH conditions are met
+### Exception — do NOT make it a sub-item when all of these hold
 
-- Neither half can be verified in isolation after splitting
-- AND the code and responsibility are extremely small (equivalent to 1 class / 1 file)
+- It adds **one** new source file
+- It has **no** UI surface of its own
+- It has **no** data definition or schema of its own
+
+Write it as a section of the parent's documents instead. This is a test, not a judgement
+call — check the three and act on the answer.
+
+This exception was under-applied: `editor/code-highlight` is 65 lines in one file with no
+surface or schema of its own, and it became a sub-item carrying six documents totalling
+188 lines. Documentation should not outweigh the code it describes by 3x.
+
+### Document set
+
+A sub-item that clears the exception but is still small takes a reduced set — three
+documents instead of six:
+
+| | Documents | When |
+|---|---|---|
+| Full | overview / spec / design / tasks / test-cases / dev-notes | Default |
+| Small (`/add-feature --small <path>`) | overview / design / dev-notes | One new source file, and no UI surface or schema of its own beyond what the exception above already allows |
+
+In the small set, overview.md absorbs the behaviour and the task list, and test cases go
+into the **parent's** test-cases.md. design.md stays in both sets — it is the file the
+mechanical drift checks read.
+
+Small is not the default for anything that merely feels minor. Ask the exception question
+first (should this be a sub-item at all), and reach for `--small` only for what survives it.
+If the behaviour section grows into screen transitions or a state table, it was never
+small — recreate it with the full set.
 
 ### Procedure
 
@@ -56,6 +83,9 @@ Split if any of the following apply:
 2. When a split target is identified, run `/add-feature <sub-item-path>` without hesitation
 3. Parent-level design.md / tasks.md should contain only links to sub-items and cross-cutting concerns
 4. After splitting, keep the parent's overview.md and spec.md as-is (do not delete them)
+5. `/add-feature` inserts into docs/index.md but does **not** add the link to the parent's
+   design.md / tasks.md. Add those by hand — this is where `vault-switch` and `inline-title`
+   were both missed
 
 ---
 
