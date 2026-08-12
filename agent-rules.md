@@ -1,115 +1,114 @@
-# Agent Rules
+# エージェントルール
 
-This file defines the common development process and documentation standards for the project.
-When given an implementation task, follow these rules to prepare documentation before starting.
-
----
-
-## Workflow
-
-### Starting a new feature
-1. Create `docs/project_overview.md`, `docs/glossary.md`, and `docs/tags.md` if they do not exist
-2. Run `/add-feature <feature-area>` to set up the directory, templates, and index.md at once
-3. Write content in order: overview.md → spec.md → design.md
-4. After writing spec.md, evaluate whether subdivision is needed per the split rules
-5. If subdivision is needed, run `/add-feature <sub-item-path>`
-6. Write content in tasks.md and begin implementation
-
-Steps 3–6 are also spelled out by the `/add-feature` skill, which is where they actually
-land at the right moment. Keep the two in sync when either changes.
-
-### During implementation
-7. Record decisions, issues, and changes in dev-notes.md as they occur
-8. If skills, permissions, or information are lacking, record the request in dev-notes.md
-
-### After implementation
-9. Update the status in tasks.md
-10. If the implementation deviates from the design, update design.md and record the diff in dev-notes.md
-
-### Committing
-- Commit after each logical unit of work (e.g. per sub-item completed, per doc section written)
-- Do not batch multiple unrelated changes into a single commit
+このファイルは、プロジェクト共通の開発プロセスとドキュメント基準を定めるものです。
+実装タスクを受けたら、着手前にこのルールに従ってドキュメントを準備してください。
 
 ---
 
-## Split Rules
+## ワークフロー
 
-**Default is to split. Extract any independently implementable unit into a sub-item immediately.**
+### 新機能の開始
+1. `docs/project_overview.md`・`docs/glossary.md`・`docs/tags.md` が無ければ作成する
+2. `/add-feature <機能エリア>` を実行し、ディレクトリ・テンプレート・index.md をまとめて用意する
+3. overview.md → spec.md → design.md の順に内容を書く
+4. spec.md を書き終えたら、分割ルールに照らして分割の要否を判断する
+5. 分割するなら `/add-feature <サブ項目のパス>` を実行する
+6. tasks.md を書き、実装に着手する
 
-### Criteria for splitting
+3〜6 は `/add-feature` skill にも書かれており、**実際にその瞬間に届くのはそちら**です。
+どちらかを変えたら、もう一方も揃えてください。
 
-Split if any of the following apply:
+### 実装中
+7. 判断・問題・変更は、起きたその場で dev-notes.md に記録する
+8. スキル・権限・情報が不足した場合は、その要望を dev-notes.md に記録する
 
-- Has its own screen, view, or UI surface
-- Has its own data definition or schema
-- Can be implemented and tested without the other units existing
-- A separate developer could work on it in parallel
+### 実装後
+9. tasks.md のステータスを更新する
+10. 実装が設計から外れた場合は、**design.md 本体を更新**し、その差分を dev-notes.md に記録する
 
-### Exception — do NOT make it a sub-item when all of these hold
+### コミット
+- 論理的なひとまとまりごとにコミットする（サブ項目 1 件、ドキュメント 1 節、など）
+- 無関係な変更を 1 つのコミットにまとめない
 
-- It adds **one** new source file
-- It has **no** UI surface of its own
-- It has **no** data definition or schema of its own
+---
 
-Write it as a section of the parent's documents instead. This is a test, not a judgement
-call — check the three and act on the answer.
+## 分割ルール
 
-This exception was under-applied: `editor/code-highlight` is 65 lines in one file with no
-surface or schema of its own, and it became a sub-item carrying six documents totalling
-188 lines. Documentation should not outweigh the code it describes by 3x.
+**原則は分割です。独立して実装できる単位は、ためらわずサブ項目に切り出してください。**
 
-### Document set
+### 分割する条件
 
-A sub-item that clears the exception but is still small takes a reduced set — three
-documents instead of six:
+以下のいずれかに当てはまるなら分割します。
 
-| | Documents | When |
+- 独自の画面・ビュー・UI 面を持つ
+- 独自のデータ定義・スキーマを持つ
+- 他の単位が存在しなくても実装・テストできる
+- 別の開発者が並行して作業できる
+
+### 例外 — 以下をすべて満たすならサブ項目にしない
+
+- 追加するソースファイルが **1 つ**
+- 独自の UI 面を **持たない**
+- 独自のデータ定義・スキーマを **持たない**
+
+この場合は親のドキュメントの一節として書いてください。
+**これは判断ではなく照合です。** 3 つを確認して、その答えどおりに動いてください。
+
+この例外は適用漏れがありました。`editor/code-highlight` は 1 ファイル 65 行で、独自の UI 面も
+スキーマも持たないのにサブ項目になり、6 文書 188 行を抱えています。
+**ドキュメントが対象コードの 3 倍になるのは行き過ぎです。**
+
+### 文書セット
+
+例外を通過してもなお小規模なサブ項目には、6 文書ではなく 3 文書の軽い型を使います。
+
+| | 文書 | 使う場面 |
 |---|---|---|
-| Full | overview / spec / design / tasks / test-cases / dev-notes | Default |
-| Small (`/add-feature --small <path>`) | overview / design / dev-notes | One new source file, and no UI surface or schema of its own beyond what the exception above already allows |
+| 通常 | overview / spec / design / tasks / test-cases / dev-notes | 既定 |
+| 小規模（`/add-feature --small <パス>`） | overview / design / dev-notes | 上の例外を通過した上で、なお小さいもの |
 
-In the small set, overview.md absorbs the behaviour and the task list, and test cases go
-into the **parent's** test-cases.md. design.md stays in both sets — it is the file the
-mechanical drift checks read.
+小規模版では overview.md が「振る舞い」と「タスク」を吸収し、テストケースは**親の**
+test-cases.md に入れます。**design.md は両方に残します** — 機械的なドリフト検査が読むのが
+このファイルだからです。
 
-Small is not the default for anything that merely feels minor. Ask the exception question
-first (should this be a sub-item at all), and reach for `--small` only for what survives it.
-If the behaviour section grows into screen transitions or a state table, it was never
-small — recreate it with the full set.
+**「なんとなく小さそう」を `--small` の理由にしないでください。** まず例外の質問（そもそも
+サブ項目にすべきか）を先に問い、それを通過したものにだけ `--small` を使います。
+「振る舞い」の節が画面遷移や状態遷移表に育ってきたら、それは小規模ではありません。
+通常セットで作り直してください。
 
-### Procedure
+### 手順
 
-1. Evaluate splitting immediately after writing spec.md
-2. When a split target is identified, run `/add-feature <sub-item-path>` without hesitation
-3. Parent-level design.md / tasks.md should contain only links to sub-items and cross-cutting concerns
-4. After splitting, keep the parent's overview.md and spec.md as-is (do not delete them)
-5. `/add-feature` inserts into docs/index.md but does **not** add the link to the parent's
-   design.md / tasks.md. Add those by hand — this is where `vault-switch` and `inline-title`
-   were both missed
-
----
-
-## Bug Ticket Workflow
-
-### When a bug is reported
-1. Assign the next available ID by checking the highest existing number in `issues/tickets/`
-2. Create `issues/tickets/BUG-{NNN}.md` using `issues/templates/BUG-template.md`
-3. Add a row to `issues/index.md` with state `Open`
-4. Investigate the cause, then fix the code
-5. Update the ticket with the cause, fix details, and relevant commit hash; change state to `Fixed`
-6. Commit the ticket file together with (or immediately after) the fix commit
-
-### Rules
-- All bug tickets go in `issues/tickets/` — never in feature-area `tasks.md` or `dev-notes.md`
-- One ticket per distinct root cause; link related tickets if they share a cause
-- Do not close a ticket as `Closed` without user confirmation that the fix was verified
+1. spec.md を書いた直後に分割を検討する
+2. 分割対象を見つけたら、ためらわず `/add-feature <サブ項目のパス>` を実行する
+3. 親の design.md / tasks.md には、サブ項目へのリンクと横断事項だけを置く
+4. 分割後も、親の overview.md と spec.md はそのまま残す（削除しない）
+5. `/add-feature` は docs/index.md には挿入しますが、**親の design.md / tasks.md への
+   リンクは追加しません。** ここは手で追記してください — `vault-switch` と `inline-title` は
+   どちらもこの手順を落としました
 
 ---
 
-## Guidelines
+## バグ票のワークフロー
 
-- Create documentation before implementation
-- If requirements change during implementation, update the relevant documents immediately
-- Write dev-notes.md as a record of decisions, not a work log
-- Commit and push to GitHub at natural stopping points
-- Do not load or reference any files under `_jp/` — that directory is for human reference only
+### バグが報告されたら
+1. `issues/tickets/` の最大番号を確認し、次の ID を割り当てる
+2. `issues/templates/BUG-template.md` を使って `issues/tickets/BUG-{NNN}.md` を作成する
+3. `issues/index.md` に状態 `Open` の行を追加する
+4. 原因を調査し、コードを修正する
+5. 原因・修正内容・該当コミットハッシュをチケットに追記し、状態を `Fixed` に変更する
+6. チケットのファイルは、修正コミットと同時（または直後）にコミットする
+
+### ルール
+- バグ票はすべて `issues/tickets/` に置く — 機能エリアの `tasks.md` や `dev-notes.md` には書かない
+- 根本原因ごとに 1 チケット。原因を共有するものは相互にリンクする
+- **修正が検証できたというユーザーの確認なしに `Closed` にしない**
+
+---
+
+## 指針
+
+- ドキュメントは実装より先に作る
+- 実装中に要件が変わったら、関連ドキュメントを即座に更新する
+- dev-notes.md は作業ログではなく、**判断の記録**として書く
+- 区切りのよいところで GitHub にコミット・push する
+- **`_jp/` 配下のファイルは読み込まない・参照しない** — あのディレクトリは人間の参照専用です
