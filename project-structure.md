@@ -1,100 +1,101 @@
-# Project Structure
+# プロジェクト構成
 
-## Directory Layout
+## ディレクトリ構成
 
 ```
 docs/
-├── index.md               # Required — list of feature areas and sub-items
-├── project_overview.md    # Required — overall project overview
-├── glossary.md            # Required — domain-specific terminology
-├── tags.md                # Required — inline tag definitions and schema
-└── {feature-area}/        # One directory per feature area
+├── index.md               # 必須 — 機能エリアとサブ項目の一覧
+├── project_overview.md    # 必須 — プロジェクト全体の概要
+├── glossary.md            # 必須 — ドメイン固有の用語
+├── tags.md                # 必須 — インラインタグの定義とスキーマ
+└── {機能エリア}/          # 機能エリアごとに 1 ディレクトリ
     ├── overview.md
     ├── spec.md
     ├── design.md
     ├── tasks.md
     ├── test-cases.md
     ├── dev-notes.md
-    └── {sub-item}/        # Created as needed per split rules
-        └── ...            # Six documents, or three for a small sub-item
+    └── {サブ項目}/        # 分割ルールに従って必要に応じて作成
+        └── ...            # 6 文書、小規模サブ項目なら 3 文書
 
-templates/                 # Document templates for feature areas
+templates/                 # 機能エリア用のドキュメントテンプレート
 ├── overview.md
 ├── spec.md
 ├── design.md
 ├── tasks.md
 ├── test-cases.md
 ├── dev-notes.md
-└── small/                 # Reduced set for small sub-items (/add-feature --small)
-    ├── overview.md        # absorbs spec.md and tasks.md
+└── small/                 # 小規模サブ項目用の軽い型（/add-feature --small）
+    ├── overview.md        # spec.md と tasks.md を吸収する
     ├── design.md
     └── dev-notes.md
 
-issues/                    # Bug ticket management
-├── index.md               # Ticket list and state legend
+issues/                    # バグ票の管理
+├── index.md               # チケット一覧と状態の凡例
 ├── templates/
 │   └── BUG-template.md
 └── tickets/
-    └── BUG-{NNN}.md        # Added sequentially as bugs are reported
+    └── BUG-{NNN}.md        # バグ報告のたびに連番で追加
 ```
 
 ---
 
-## Document Templates
+## ドキュメントのテンプレート
 
 ### project_overview.md
-- **Purpose & Background**: The problem this project solves and why it exists
-- **Scope**: What will and will not be built
-- **Tech Stack Overview**: Technologies used and rationale
-- **Overall Architecture**: High-level system structure
-- **Constraints**: Technical, environmental, and resource limitations
+- **目的・背景**: このプロジェクトが解決する課題と、存在する理由
+- **スコープ**: 作るものと作らないもの
+- **技術スタック概要**: 使用する技術と、その選定理由
+- **全体アーキテクチャ**: システムの大枠の構造
+- **制約**: 技術・環境・リソース上の制限
 
-### overview.md (per feature area)
-- **Purpose & Background**: Why this feature is needed
-- **Scope**: What will and will not be built
-- **Constraints**: Technical and resource limitations
-- **Definition of Done**: What constitutes completion
+### overview.md（機能エリアごと）
+- **目的・背景**: なぜこの機能が必要か
+- **スコープ**: 作るものと作らないもの
+- **制約**: 技術・リソース上の制限
+- **完了条件**: 何をもって完成とするか
 
 ### spec.md
-- **Feature List**: Enumeration of provided features
-- **Screens & User Flow**: Step-by-step user interactions
-- **Screen / State Details**: Display content, actions, and transitions
-- **Error Cases**: Behavior for abnormal conditions
-- **Out of Scope**: Things intentionally not handled
+- **機能一覧**: 提供する機能の列挙
+- **画面・操作フロー**: 利用者の操作を順を追って記述
+- **各画面 / 状態の詳細**: 表示内容・操作・遷移先
+- **エラーケース**: 異常時の挙動
+- **未対応ケース**: 意図的に扱わないもの
 
 ### design.md
-- **Tech Selection**: Technologies used and rationale
-- **Architecture**: Component structure
-- **Data Structures**: Key data models and schemas
-- **Interfaces**: API and function interfaces
-- **Dependencies**: External libraries and services
+- **技術選定**: 使用する技術と、その選定理由
+- **アーキテクチャ**: コンポーネント構成
+- **データ構造**: 主要なデータモデルとスキーマ
+- **インターフェース**: API・関数のインターフェース
+- **依存関係**: 外部ライブラリ・サービス
 
 ### tasks.md
-- **Task List**: Checkbox format
-- **Dependencies**: Ordering constraints between tasks
-- **Status**: Todo / In progress / Done
+- **タスク一覧**: チェックボックス形式
+- **依存関係**: タスク間の順序制約
+- **ステータス**: 未着手 / 進行中 / 完了
 
 ### dev-notes.md
-- **Implementation Decisions**: Why a particular approach was chosen
-- **Issues & Resolutions**: Problems encountered and how they were solved
-- **Deviations from Design**: Differences from the design document and reasons
-- **Future Work**: Current limitations and items to address later
-- **Requests to User**: Recorded when skills, permissions, or information are lacking
+- **実装上の判断**: なぜその実装を選んだか
+- **発生した問題と対処**: 詰まった点と、その解決方法
+- **設計からの変更点**: 設計書との差分と理由
+- **今後の課題**: 現状の制限と、将来対応すべき事項
+- **ユーザへの要望**: スキル・権限・情報が不足した場合に記録する
 
-### Small sub-items (three documents)
+### 小規模サブ項目（3 文書）
 
-A sub-item created with `/add-feature --small` gets overview.md, design.md and dev-notes.md
-only. See the split rules in `agent-rules.md` for when this applies.
+`/add-feature --small` で作ったサブ項目は overview.md・design.md・dev-notes.md の
+3 つだけを持ちます。適用条件は `agent-rules.md` の分割ルールを参照してください。
 
-- **overview.md** carries two extra sections in place of the omitted files: **Behaviour**
-  (what spec.md would have said, as 操作 → 結果 bullets) and **Tasks** (the checklist)
-- **design.md is kept deliberately.** Its Interfaces section is what the mechanical
-  doc/code drift checks read — dropping it would make the sub-item invisible to them
-- Test cases go into the **parent's** test-cases.md, not a local one
+- **overview.md** が、省いた 2 文書の代わりに 2 つの節を持ちます。**振る舞い**
+  （spec.md に書くはずだった内容。操作 → 結果の箇条書き）と、**タスク**（チェックリスト）
+- **design.md は意図的に残しています。** インターフェース節が、ドキュメントと実装の
+  ドリフトを機械的に検査する際の読み取り対象だからです。これを省くと、そのサブ項目は
+  検査から見えなくなります
+- テストケースは**親の** test-cases.md に入れます。ローカルには作りません
 
-If the Behaviour section grows into screen transitions or a state table, the sub-item was
-never small. Recreate it with the full set rather than adding files one at a time.
+「振る舞い」の節が画面遷移や状態遷移表に育ってきたら、そのサブ項目は小規模ではありません。
+ファイルを 1 つずつ足すのではなく、通常セットで作り直してください。
 
-### Bug ticket (issues/tickets/BUG-{NNN}.md)
+### バグ票（issues/tickets/BUG-{NNN}.md）
 
-Created following `issues/templates/BUG-template.md`.
+`issues/templates/BUG-template.md` に従って作成します。

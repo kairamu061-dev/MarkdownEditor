@@ -13,10 +13,20 @@ Translate all files matching the following patterns:
 
 | Pattern | Example |
 |---------|---------|
-| `*.md` in project root (excluding `CLAUDE.md`) | `agent-rules.md` → `_jp/agent-rules.md` |
+| `*.md` in project root, **English ones only** | — |
 | `.claude/skills/*/SKILL.md` | `.claude/skills/add-feature/SKILL.md` → `_jp/skills/add-feature/SKILL.md` |
 
 When new agent files are added in the future, they will be picked up automatically as long as they match these patterns.
+
+### Never translate
+
+- `CLAUDE.md`
+- **`agent-rules.md` and `project-structure.md`** — these are written in Japanese as their
+  own source of truth. Translating them would recreate the second copy this change removed,
+  and two copies of the rules drift with nothing to detect it.
+
+Before translating any root `*.md`, check whether it is already Japanese. If it is, it is a
+source, not a translation target — skip it and say so in the report.
 
 ## Translation rules
 
