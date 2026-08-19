@@ -40,7 +40,7 @@ src/editor/
 
 | 対象 | デコレーション | 与える値 |
 |------|----------------|----------|
-| 行頭の空白 | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: d * step` |
+| 行頭の空白 | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: d * step; text-indent: 0` |
 | 行 | `Decoration.line` | `padding-left: base + d * step + bulletWidth` |
 | 行 | 同上 | `text-indent: -(行頭空白があれば d * step) - (弾丸行なら bulletWidth)` |
 | 行 | 同上 | 段 1 以降は `background-image` に `linear-gradient` を d 本重ねて縦ガイド線 |
@@ -59,6 +59,11 @@ src/editor/
 カーソルが乗って `- ` がソース表示に戻っている行だけは、`"- "` の実幅と
 `--md-list-bullet-width` の差ぶん本文がずれる。これは整形表示とソース表示の
 差そのもので、live-preview の他の記法と同じ性質。
+
+**幅を固定する inline-block には必ず `text-indent: 0` を置くこと。** `text-indent` は継承
+プロパティで、`inline-block` はブロックコンテナなので、行に掛けた負の `text-indent` を
+中身にも適用してしまう。箱の位置は正しいのに中身だけが左へずれる（弾丸が段によらず
+行頭に貼り付く）。
 
 判断の要点は 2 つ。
 
