@@ -17,7 +17,13 @@ src/editor/
 
 - `ViewPlugin` が `docChanged` / `selectionSet` / `viewportChanged` のたびに可視範囲の構文木を走査し、
   DecorationSet を再構築する（全文走査はしない）
-- 隠蔽は `Decoration.replace({})`、弾丸は `Decoration.replace({ widget: BulletWidget })`
+- 隠蔽は `Decoration.replace({})`、弾丸は `Decoration.replace({ widget: BulletWidget })`。
+  弾丸は `-` に加えて**直後の空白 1 つ**まで置換し、ウィジェットの幅を
+  `--md-list-bullet-width` に固定する（空白を残すとその幅がフォント依存になり、
+  下のインデント計算が「だいたい合う」程度に落ちる。等幅フォントの `"• "` は 2ch ある）。
+  カーソル判定はマーク 1 文字のままにしてある — 置換範囲の内側にあたる位置は
+  マーク末尾だけで既に判定に含まれ、判定まで広げると Enter 直後のカーソル位置
+  （本文先頭）で毎回 `- ` がソース表示に戻ってしまう
 - 選択との重なり判定は仕様の「表示/再表示の判定ルール」に従い、記法ノードの親範囲
   （Emphasis / StrongEmphasis / InlineCode / Strikethrough / Link / 見出し行）と全選択レンジを比較する
 - 弾丸の色は `EditorView.baseTheme` で `.cm-list-bullet { color: var(--accent) }` を定義
@@ -47,7 +53,12 @@ src/editor/
 折り返し行の左端  = padding                      = base + d * step + bulletWidth
 ```
 
-となり、本文と折り返しが**段数によらず**一致する。
+となり、本文と折り返しが**段数によらず**一致する。3 項とも CSS の長さ値だけで決まるので、
+エディタのフォント設定を変えても比率は崩れない（弾丸の幅を固定してあるのが前提。上記参照）。
+
+カーソルが乗って `- ` がソース表示に戻っている行だけは、`"- "` の実幅と
+`--md-list-bullet-width` の差ぶん本文がずれる。これは整形表示とソース表示の
+差そのもので、live-preview の他の記法と同じ性質。
 
 判断の要点は 2 つ。
 

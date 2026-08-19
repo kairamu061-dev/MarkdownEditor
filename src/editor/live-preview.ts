@@ -19,6 +19,9 @@ import { insertNewline } from "@codemirror/commands";
 import { syntaxTree } from "@codemirror/language";
 import { type SyntaxNode } from "@lezer/common";
 
+// 弾丸は `-` と**直後の空白まで**を置き換え、幅を --md-list-bullet-width に固定する。
+// 空白を残すとその幅がフォント依存になり、下の幾何計算（本文開始位置 = 弾丸幅）が
+// 「だいたい合う」程度に落ちる。等幅フォントでは "• " が 2ch あり 1.4ch とずれる
 class BulletWidget extends WidgetType {
   toDOM(): HTMLElement {
     const span = document.createElement("span");
@@ -258,13 +261,20 @@ function buildDecorations(view: EditorView): DecorationSet {
         // 箇条書きマーク → • ウィジェット
         if (node.name === "ListMark") {
           const item = node.node.parent;
+          // 直後の空白 1 つも巻き込む（見出し・引用マークと同じ扱い）。
+          // 弾丸の見かけの幅を CSS 側で決め切るため。
+          // カーソル判定は従来どおりマーク自体（1 文字）で行う。置換範囲の内側にあたる
+          // 位置は node.to だけで、そこは既にこの判定に含まれる。判定まで広げると
+          // 本文先頭（Enter 直後のカーソル位置）で毎回 `- ` がソース表示に戻ってしまう
+          const markEnd =
+            doc.sliceString(node.to, node.to + 1) === " " ? node.to + 1 : node.to;
           if (
             item?.name === "ListItem" &&
             item.parent?.name === "BulletList" &&
             !touchesSelection(state, node.from, node.to) &&
             /^[-*+]$/.test(doc.sliceString(node.from, node.to))
           ) {
-            decorations.push(bullet.range(node.from, node.to));
+            decorations.push(bullet.range(node.from, markEnd));
           }
         }
       },
@@ -319,6 +329,9 @@ const livePreviewTheme = EditorView.baseTheme({
   },
   ".cm-list-bullet": {
     color: "var(--accent)",
+    // 幅を固定して「弾丸 + 空白」の見かけの幅をフォントから切り離す
+    display: "inline-block",
+    width: "var(--md-list-bullet-width)",
   },
   ".cm-md-link": {
     cursor: "pointer",
