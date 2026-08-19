@@ -116,6 +116,18 @@ mountEditor(el, {
 });
 ```
 
+## Enter キーの扱い
+
+Enter は `Prec.highest` の 1 バインドにまとめ、次の順で試す。
+どちらも `false` を返したら既定のキーマップへ渡る。
+
+1. `quoteAwareEnter` — 行頭が `>` でない遅延継続行では plain な改行にする（BUG-011）
+2. `insertNewlineContinueMarkupCommand({ nonTightLists: false })` — 空の箇条書き項目で
+   Enter を押したとき、マークを消さず「上に空行を挿入して loose 化する」lang-markdown の
+   既定分岐を止める（BUG-025）。この分岐は**タイトな 2 項目リストの 2 番目**でだけ起きる
+
+`markdown()` は Enter を `Prec.high` で束ねるため、`Prec.highest` でないと先に取れない。
+
 ## 依存関係
 
 | ライブラリ / サービス | 用途 |
