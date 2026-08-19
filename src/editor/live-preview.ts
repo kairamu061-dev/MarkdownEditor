@@ -16,6 +16,7 @@ import {
   type Range,
 } from "@codemirror/state";
 import { insertNewline } from "@codemirror/commands";
+import { insertNewlineContinueMarkupCommand } from "@codemirror/lang-markdown";
 import { syntaxTree } from "@codemirror/language";
 import { type SyntaxNode } from "@lezer/common";
 
@@ -383,6 +384,18 @@ const quoteAwareEnter: Command = (view) => {
   return false;
 };
 
+// 空の箇条書き項目で Enter を押したときに、マークを消さず「上に空行を挿入して
+// リストを loose 化する」のが lang-markdown の既定（BUG-025）。
+// `- aaaa` → Enter → Enter が `- aaaa` / 空行 / `- ` になり、Obsidian のように
+// 項目が消えない。この分岐は 2 項目のタイト（項目間に空行が無い）なリストでだけ
+// 起き、3 項目目以降や既に loose なリストでは既定でもマークが消える。
+// nonTightLists: false でその分岐を止め、常にマークを消す側へ寄せる
+const markupEnter = insertNewlineContinueMarkupCommand({ nonTightLists: false });
+
+// Enter は quoteAwareEnter → markupEnter の順に試す。どちらも false を返した場合
+// （Markdown 文脈でない等）は既定のキーマップへ渡る
+const listAwareEnter: Command = (view) => quoteAwareEnter(view) || markupEnter(view);
+
 export function livePreview(onLinkClick: (href: string) => void): Extension {
   const clickHandler = EditorView.domEventHandlers({
     mousedown(event) {
@@ -395,8 +408,7 @@ export function livePreview(onLinkClick: (href: string) => void): Extension {
       return true;
     },
   });
-  // markdown() は Enter を Prec.high で束ねるため、Prec.highest で先に判定する。
-  // quoteAwareEnter が false を返した場合は既定の insertNewlineContinueMarkup に渡る
-  const enterOverride = Prec.highest(keymap.of([{ key: "Enter", run: quoteAwareEnter }]));
+  // markdown() は Enter を Prec.high で束ねるため、Prec.highest で先に判定する
+  const enterOverride = Prec.highest(keymap.of([{ key: "Enter", run: listAwareEnter }]));
   return [livePreviewPlugin, livePreviewTheme, clickHandler, enterOverride];
 }
