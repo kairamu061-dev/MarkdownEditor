@@ -112,7 +112,11 @@ function indentBox(d: number): Decoration {
   let deco = indentBoxCache.get(d);
   if (!deco) {
     deco = Decoration.mark({
-      attributes: { style: `display:inline-block;width:calc(${d} * ${INDENT_STEP})` },
+      // text-indent:0 は弾丸と同じ理由（行の負の text-indent を継承させない）。
+      // 中身が空白なので見た目には出ないが、同じ罠なので明示しておく
+      attributes: {
+        style: `display:inline-block;width:calc(${d} * ${INDENT_STEP});text-indent:0`,
+      },
     });
     indentBoxCache.set(d, deco);
   }
@@ -332,6 +336,10 @@ const livePreviewTheme = EditorView.baseTheme({
     // 幅を固定して「弾丸 + 空白」の見かけの幅をフォントから切り離す
     display: "inline-block",
     width: "var(--md-list-bullet-width)",
+    // inline-block はブロックコンテナなので、行に掛けた負の text-indent を
+    // **継承して自分の中身にも適用する**。打ち消さないと「•」だけが箱の左外
+    // （行頭）へ飛び、段を深くしても弾丸が動かなくなる
+    textIndent: "0",
   },
   ".cm-md-link": {
     cursor: "pointer",
