@@ -39,4 +39,4 @@
 | [BUG-022](./tickets/BUG-022.md) | ドロップ先ハイライトのちらつき / ステータス通知が再描画で消える | file-explorer/tree-view | Closed |
 | [BUG-023](./tickets/BUG-023.md) | verify-build.bat が Linux 側の node_modules を再利用してビルド不能 | tooling | Closed |
 | [BUG-024](./tickets/BUG-024.md) | アイコンを差し替えても exe のアイコンが更新されない | tooling | Closed |
-| [BUG-025](./tickets/BUG-025.md) | 2 項目のリストで空項目の Enter がマークを消さず上に空行を挿入する | editor/live-preview | Fixed |
+| [BUG-025](./tickets/BUG-025.md) | 2 項目のリストで空項目の Enter がマークを消さず上に空行を挿入する | editor/live-preview | Closed |
