@@ -43,3 +43,7 @@
 | [BUG-026](./tickets/BUG-026.md) | 番号付きリストで Tab が入れ子にならず、番号も振り直されない | editor/live-preview | Fixed |
 | [BUG-027](./tickets/BUG-027.md) | リストの遅延継続行で Enter を押すと入力した文字が消える | editor/live-preview | Fixed |
 | [BUG-028](./tickets/BUG-028.md) | 番号付きリストの IME 変換中の文字が一行下に出る | editor/live-preview | Fixed |
+| [BUG-029](./tickets/BUG-029.md) | リストの遅延継続行が項目の本文位置まで字下げされる | editor/live-preview | Fixed |
+| [BUG-030](./tickets/BUG-030.md) | インデントされたリスト行でカーソルが大きく飛ぶ | editor/live-preview | Fixed |
+| [BUG-031](./tickets/BUG-031.md) | 空のリスト項目を Backspace で消すと空白だけの行が残る | editor/live-preview | Fixed |
+| [BUG-032](./tickets/BUG-032.md) | 番号付きリストで番号と本文のあいだに余分な隙間が空く | editor/live-preview | Fixed |

@@ -136,18 +136,23 @@ function markerBox(width: string): Decoration {
   return deco;
 }
 
-const indentBoxCache = new Map<number, Decoration>();
-function indentBox(d: number): Decoration {
-  let deco = indentBoxCache.get(d);
+// 行頭空白の箱は**1 文字ずつ**に分ける。まとめて 1 つの箱にすると、原文の空白は
+// 箱の左端に詰まって描かれ、右側が空きになる。するとカーソルを左へ動かしたときに
+// 空白のあいだは数 px ずつしか動かず、箱を抜ける瞬間に大きく飛ぶ（BUG-030）。
+// 1 文字 = 段の幅 ÷ 空白の数 にすると、カーソルが等間隔で動く。
+const indentBoxCache = new Map<string, Decoration>();
+function indentBox(d: number, count: number): Decoration {
+  const key = `${d}:${count}`;
+  let deco = indentBoxCache.get(key);
   if (!deco) {
     deco = Decoration.mark({
       // text-indent:0 は弾丸と同じ理由（行の負の text-indent を継承させない）。
       // 中身が空白なので見た目には出ないが、同じ罠なので明示しておく
       attributes: {
-        style: `display:inline-block;width:calc(${d} * ${INDENT_STEP});text-indent:0`,
+        style: `display:inline-block;width:calc(${d} * ${INDENT_STEP} / ${count});text-indent:0`,
       },
     });
-    indentBoxCache.set(d, deco);
+    indentBoxCache.set(key, deco);
   }
   return deco;
 }
@@ -164,16 +169,53 @@ interface ListLineInfo {
 }
 
 /**
- * マーカーの見かけの幅を決める。
+ * 番号付きマーカーの見かけの幅。
  *
- * 弾丸はウィジェットの幅を CSS で固定しているので定数。番号付きは `1.` `10.` と
- * 桁数で変わるため、文字数 × 1ch の箱に入れる。数字の字幅は多くのフォントで
- * `ch`（「0」の幅）と一致し、`.` と空白はそれより狭いので、箱は必ず中身より広くなる
- * （はみ出して本文に重なることが無い）。
+ * 数字の字幅は `ch`（「0」の幅）と一致するので桁数ぶんは `ch` で足りるが、
+ * `.` と直後の空白の幅はフォントによって大きく違う（等幅なら 2ch、
+ * プロポーショナルなら 1ch 弱）。文字数 × 1ch で見積もると、プロポーショナルの
+ * ときに 1ch 近い余白が番号と本文の間に空いてしまう。
+ *
+ * そこで `". "` の実幅だけを測って `--md-list-marker-tail` に入れ、
+ * 桁数ぶんの `ch` に足す（`markerTailMeasure`）。測れていないときは 1ch を使う。
  */
-function orderedMarkerWidth(len: number): string {
-  return `calc(${len} * var(--md-list-marker-unit))`;
+function orderedMarkerWidth(digits: number): string {
+  return `calc(${digits} * 1ch + var(--md-list-marker-tail, 1ch))`;
 }
+
+/**
+ * エディタのフォントでの `". "` の実幅を測り、CSS 変数に入れる。
+ * フォント設定（settings/ui）が変わったときだけ測り直す。
+ */
+const markerTailMeasure = ViewPlugin.fromClass(
+  class {
+    private font = "";
+    constructor(view: EditorView) {
+      this.measure(view);
+    }
+    update(update: ViewUpdate): void {
+      if (update.geometryChanged) this.measure(update.view);
+    }
+    measure(view: EditorView): void {
+      const style = getComputedStyle(view.contentDOM);
+      const key = `${style.fontFamily}|${style.fontSize}`;
+      if (key === this.font) return; // 同じフォントなら測り直さない（測定で再入しない）
+      this.font = key;
+      const probe = document.createElement("span");
+      probe.style.cssText =
+        "position:absolute;visibility:hidden;white-space:pre;top:0;left:0;pointer-events:none";
+      view.contentDOM.appendChild(probe);
+      probe.textContent = "0. ";
+      const full = probe.getBoundingClientRect().width;
+      probe.textContent = "0";
+      const digit = probe.getBoundingClientRect().width;
+      probe.remove();
+      if (digit > 0 && full > digit) {
+        view.dom.style.setProperty("--md-list-marker-tail", `${(full - digit).toFixed(2)}px`);
+      }
+    }
+  },
+);
 
 /** ListItem のマーク範囲（直後の空白 1 つを含む）を返す */
 function markRange(
@@ -214,7 +256,9 @@ function listLineInfo(state: EditorState, line: Line, indentLen: number): ListLi
   let markerWidth = BULLET_WIDTH;
   let orderedMark: { from: number; to: number } | null = null;
   if (ordered) {
-    markerWidth = orderedMarkerWidth(range ? range.to - range.from : 3);
+    // ListMark は "1." の形。桁数 = マークの長さ - 1（`.` または `)` のぶん）
+    const markLen = item.firstChild ? item.firstChild.to - item.firstChild.from : 2;
+    markerWidth = orderedMarkerWidth(Math.max(1, markLen - 1));
     // 番号は replace せず生テキストのまま残すので、幅だけ mark で固定する
     if (isItemStart && range) orderedMark = range;
   }
@@ -358,11 +402,18 @@ function buildDecorations(view: EditorView): DecorationSet {
       const indentLen = /^[ \t]*/.exec(line.text)![0].length;
       const info = listLineInfo(state, line, indentLen);
       if (!info) continue;
+      // 行頭に空白もマークも無い行（遅延継続行）は、見た目上ふつうの段落なので
+      // 字下げしない。`- aaaa` の次行に `a` と書いたときに `a` だけが
+      // 項目の本文位置へ寄ってしまうのを防ぐ（BUG-029）
+      if (!info.isItemStart && indentLen === 0) continue;
       decorations.push(
         listLine(info.depth, indentLen > 0, info.isItemStart, info.markerWidth).range(line.from),
       );
       if (indentLen > 0 && info.depth > 0) {
-        decorations.push(indentBox(info.depth).range(line.from, line.from + indentLen));
+        const box = indentBox(info.depth, indentLen);
+        for (let i = 0; i < indentLen; i++) {
+          decorations.push(box.range(line.from + i, line.from + i + 1));
+        }
       }
       if (info.orderedMark) {
         decorations.push(
@@ -398,7 +449,6 @@ const livePreviewTheme = EditorView.baseTheme({
     "--md-list-indent-base": "2ch", // 0 段目にも入れる行頭の余白
     "--md-list-indent-step": "4ch", // 1 段あたりのインデント幅
     "--md-list-bullet-width": "1.4ch", // "• " ぶんの見かけの幅
-    "--md-list-marker-unit": "1ch", // 番号付きマーク "1. " の 1 文字あたりの幅
     "--md-list-guide": "var(--border)",
     "--md-list-guide-width": "1px",
     "--md-list-guide-offset": "0.5ch", // 弾丸の中心あたりへ線を寄せる
@@ -490,6 +540,34 @@ const lazyListEnter: Command = (view) => {
   if (column === null) return false;
   if (/\S/.test(line.text.slice(column))) return false; // 誤判定しない形なので通常処理へ
   return insertNewline(view);
+};
+
+/**
+ * 空のリスト項目で Backspace を押したとき、行を**完全な空行**にする（BUG-031）。
+ *
+ * lang-markdown の `deleteMarkupBackward` はマークだけを消し、親の本文桁に合わせた
+ * 空白を残す。最上位の項目にはその空白の行き場が無く、`- aaaa` → Enter → Backspace が
+ * `- aaaa` + 「空白 2 つだけの行」になっていた。見えない空白がファイルに残るうえ、
+ * カーソルも行頭に来ない。
+ *
+ * マークだけの行（`- ` `1. ` など、本文が空）で行末にカーソルがあるときに限り、
+ * 行のテキストをまとめて消す。
+ */
+const clearEmptyListItem: Command = (view) => {
+  const { state } = view;
+  if (state.selection.ranges.length !== 1) return false;
+  const range = state.selection.main;
+  if (!range.empty) return false;
+  const line = state.doc.lineAt(range.head);
+  if (range.head !== line.to) return false; // 行末でないなら通常の削除
+  if (!/^\s*([-*+]|\d+[.)])\s*$/.test(line.text)) return false;
+  if (line.length === 0) return false;
+  view.dispatch({
+    changes: { from: line.from, to: line.to, insert: "" },
+    userEvent: "delete.backward",
+    scrollIntoView: true,
+  });
+  return true;
 };
 
 const listAwareEnter: Command = (view) =>
@@ -704,6 +782,7 @@ export function livePreview(onLinkClick: (href: string) => void): Extension {
   const enterOverride = Prec.highest(
     keymap.of([
       { key: "Enter", run: listAwareEnter },
+      { key: "Backspace", run: clearEmptyListItem },
       // Tab / Shift+Tab は既定のインデント動作のあとに番号を振り直す
       // リスト項目なら段の上げ下げ + 採番、それ以外は既定のインデントへ委譲
       {
@@ -713,5 +792,11 @@ export function livePreview(onLinkClick: (href: string) => void): Extension {
       },
     ]),
   );
-  return [livePreviewPlugin, livePreviewTheme, clickHandler, enterOverride];
+  return [
+    livePreviewPlugin,
+    markerTailMeasure,
+    livePreviewTheme,
+    clickHandler,
+    enterOverride,
+  ];
 }

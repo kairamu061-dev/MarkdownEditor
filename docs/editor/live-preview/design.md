@@ -40,14 +40,27 @@ src/editor/
 
 マーカーの幅は箇条書きと番号付きで求め方が違う。箇条書きはウィジェットに置換して
 CSS で幅を決め切る。番号付きは**置換しない**（番号は生テキストのまま編集できる必要が
-ある）ので、mark で幅だけを `文字数 × 1ch` に固定する。数字の字幅は多くのフォントで
-`ch`（「0」の幅）と一致し、`.` と空白はそれより狭いため、箱は必ず中身より広くなる。
+ある）ので、mark で幅だけを固定する。
+
+幅は `桁数 × 1ch + var(--md-list-marker-tail)`。数字の字幅は `ch`（「0」の幅）と
+一致するので桁数ぶんは `ch` で正確に出せるが、`.` と直後の空白の幅はフォントで
+大きく違う（等幅なら 2ch、プロポーショナルなら 1ch 弱）。文字数 × 1ch と見積もると
+プロポーショナルのときに 1ch 近い隙間が空くので、`". "` の実幅だけを
+`markerTailMeasure`（ViewPlugin）で測って CSS 変数に入れる。測るのはフォント設定が
+変わったときだけ（BUG-032）。
+
 継続行は「その行が属する項目」のマーカー幅を使うので、本文の開始位置が揃う。
+ただし**行頭に空白もマークも無い行は装飾しない** — 遅延継続行まで字下げすると、
+利用者が段落のつもりで書いた行が項目の本文位置へ寄ってしまう（BUG-029）。
+
+行頭空白の箱は**1 文字ずつ**に分ける。全体を 1 つの箱にすると原文の空白が左端に
+詰まり、右側が空きになるため、カーソルが空白の上ではほとんど動かず抜ける瞬間に
+飛ぶ（BUG-030）。1 文字 = 段の幅 ÷ 空白の数 にすれば等間隔で動く。
 
 | 対象 | デコレーション | 与える値 |
 |------|----------------|----------|
-| 行頭の空白 | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: d * step; text-indent: 0` |
-| 番号付きマーク `1. ` | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: 文字数 * 1ch; text-indent: 0; white-space: pre` |
+| 行頭の空白（**1 文字ずつ**） | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: d * step / 空白の数; text-indent: 0` |
+| 番号付きマーク `1. ` | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: 桁数 * 1ch + var(--md-list-marker-tail); text-indent: 0; white-space: pre` |
 | 行 | `Decoration.line` | `padding-left: base + d * step + markerWidth` |
 | 行 | 同上 | `text-indent: -(行頭空白があれば d * step) - (マーク行なら markerWidth)` |
 | 行 | 同上 | 段 1 以降は `background-image` に `linear-gradient` を d 本重ねて縦ガイド線 |
@@ -179,6 +192,14 @@ Enter は `Prec.highest` の 1 バインドにまとめ、次の順で試す。
    既定分岐を止める（BUG-025）。この分岐は**タイトな 2 項目リストの 2 番目**でだけ起きる
 
 `markdown()` は Enter を `Prec.high` で束ねるため、`Prec.highest` でないと先に取れない。
+
+## Backspace の扱い
+
+`clearEmptyListItem` を `Prec.highest` に置く。行がマークだけ（本文が空）で
+カーソルが行末にあるときに限り、行のテキストをまとめて消して空行にする。
+
+既定の `deleteMarkupBackward` はマークだけを消し、親の本文桁に合わせた空白を残す。
+最上位の項目にはその空白の行き場が無く、見えない空白がファイルに残っていた（BUG-031）。
 
 ## 依存関係
 
