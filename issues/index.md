@@ -40,3 +40,4 @@
 | [BUG-023](./tickets/BUG-023.md) | verify-build.bat が Linux 側の node_modules を再利用してビルド不能 | tooling | Closed |
 | [BUG-024](./tickets/BUG-024.md) | アイコンを差し替えても exe のアイコンが更新されない | tooling | Closed |
 | [BUG-025](./tickets/BUG-025.md) | 2 項目のリストで空項目の Enter がマークを消さず上に空行を挿入する | editor/live-preview | Closed |
+| [BUG-026](./tickets/BUG-026.md) | 番号付きリストで Tab が入れ子にならず、番号も振り直されない | editor/live-preview | Fixed |

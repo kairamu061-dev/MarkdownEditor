@@ -28,33 +28,40 @@ src/editor/
   （Emphasis / StrongEmphasis / InlineCode / Strikethrough / Link / 見出し行）と全選択レンジを比較する
 - 弾丸の色は `EditorView.baseTheme` で `.cm-list-bullet { color: var(--accent) }` を定義
 
-### 箇条書きのインデント
+### リストのインデント
 
 構文木の走査（ノード単位）とは別に、可視範囲を**行単位**で 1 周する 2 パス目を持つ。
 1 行が複数の ListItem / BulletList に跨るため、ノード単位のままでは行デコレーションが重複する。
 
 行ごとに `resolveInner(行頭の空白の直後)` から親を辿り、BulletList / OrderedList の数を
-段数 d（0 始まり）とする。祖先に BulletList が 1 つも無ければ対象外。
+段数 d（0 始まり）とする。リストの中でなければ対象外。
 
-寸法は 3 つのデコレーションで作る。単位は原文の空白幅に依存させない。
+寸法は 4 つのデコレーションで作る。単位は原文の空白幅に依存させない。
+
+マーカーの幅は箇条書きと番号付きで求め方が違う。箇条書きはウィジェットに置換して
+CSS で幅を決め切る。番号付きは**置換しない**（番号は生テキストのまま編集できる必要が
+ある）ので、mark で幅だけを `文字数 × 1ch` に固定する。数字の字幅は多くのフォントで
+`ch`（「0」の幅）と一致し、`.` と空白はそれより狭いため、箱は必ず中身より広くなる。
+継続行は「その行が属する項目」のマーカー幅を使うので、本文の開始位置が揃う。
 
 | 対象 | デコレーション | 与える値 |
 |------|----------------|----------|
 | 行頭の空白 | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: d * step; text-indent: 0` |
-| 行 | `Decoration.line` | `padding-left: base + d * step + bulletWidth` |
-| 行 | 同上 | `text-indent: -(行頭空白があれば d * step) - (弾丸行なら bulletWidth)` |
+| 番号付きマーク `1. ` | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: 文字数 * 1ch; text-indent: 0` |
+| 行 | `Decoration.line` | `padding-left: base + d * step + markerWidth` |
+| 行 | 同上 | `text-indent: -(行頭空白があれば d * step) - (マーク行なら markerWidth)` |
 | 行 | 同上 | 段 1 以降は `background-image` に `linear-gradient` を d 本重ねて縦ガイド線 |
 
 この組み合わせで
 
 ```
-1 行目の左端      = padding - indent            = base + d * step        … 弾丸の位置
-1 行目の本文開始  = padding - indent + 空白 + 弾丸 = base + d * step + bulletWidth
-折り返し行の左端  = padding                      = base + d * step + bulletWidth
+1 行目の左端      = padding - indent              = base + d * step        … マーカーの位置
+1 行目の本文開始  = padding - indent + 空白 + マーク = base + d * step + markerWidth
+折り返し行の左端  = padding                        = base + d * step + markerWidth
 ```
 
 となり、本文と折り返しが**段数によらず**一致する。3 項とも CSS の長さ値だけで決まるので、
-エディタのフォント設定を変えても比率は崩れない（弾丸の幅を固定してあるのが前提。上記参照）。
+エディタのフォント設定を変えても比率は崩れない（マーカーの幅を固定してあるのが前提。上記参照）。
 
 カーソルが乗って `- ` がソース表示に戻っている行だけは、`"- "` の実幅と
 `--md-list-bullet-width` の差ぶん本文がずれる。これは整形表示とソース表示の
@@ -88,14 +95,15 @@ src/editor/
 ```
 
 ```typescript
-// 箇条書きインデントの寸法。EditorView.baseTheme の "&" に置く CSS カスタムプロパティで、
+// リストインデントの寸法。EditorView.baseTheme の "&" に置く CSS カスタムプロパティで、
 // 見た目の深さを変えるときはここだけを触る（実装内に散らさない）
 // --md-list-indent-base   2ch    0 段目にも入れる行頭の余白
 // --md-list-indent-step   4ch    1 段あたりのインデント幅
 // --md-list-bullet-width  1.4ch  "• " ぶんの見かけの幅
+// --md-list-marker-unit   1ch    番号付きマーク "1. " の 1 文字あたりの幅
 // --md-list-guide         var(--border)  縦ガイド線の色
 // --md-list-guide-width   1px            縦ガイド線の太さ
-// --md-list-guide-offset  0.5ch          弾丸の中心あたりへ線を寄せる量
+// --md-list-guide-offset  0.5ch          マーカーの中心あたりへ線を寄せる量
 ```
 
 ## インターフェース
@@ -115,6 +123,40 @@ mountEditor(el, {
   ],
 });
 ```
+
+## Tab / Shift+Tab と番号の振り直し
+
+既定の `indentMore` は `indentUnit`（2 スペース）を足すだけ。`- ` は 2 文字なので
+箇条書きはたまたま入れ子になるが、**`1. ` は 3 文字なので 2 では入れ子にならない**。
+構造が変わらないため番号も変わらず、「インデントしても番号が変わらない」ように見えていた
+（BUG-026）。
+
+字下げ量は隣接する項目の桁から決める。
+
+| 操作 | 目標の桁 |
+|------|----------|
+| Tab | 直前の兄弟 ListItem の**本文が始まる桁**（マーク + 直後の空白ぶん） |
+| Shift+Tab | 1 つ外側の ListItem の**マークが始まる桁** |
+
+どちらも対象が無ければ（先頭項目・最上位項目）何もせずキーを消費する。
+リスト項目の行でなければ既定の `indentMore` / `indentLess` に委譲する。
+
+### 採番
+
+- **入れ子のリストは常に 1 から。** 最上位のリストは先頭項目の番号を引き継ぐ
+- 対象は「カーソルを含む最も外側のリスト」の範囲にある OrderedList すべて
+- ListMark が無い・番号として読めない形に出会ったら、**そのリストは触らない**
+
+### 1 トランザクションにまとめる
+
+採番には字下げ**後**の構文木が要る。そこで `state.update()` で結果の状態だけを先に作り、
+その状態で番号を計算し、2 つの ChangeSet を `compose` して 1 回だけ dispatch する。
+
+分けて dispatch すると Ctrl+Z が 2 段になり、1 回目で「字下げは済んでいるが番号が古い」
+という**まさに直したかった状態**が露出する。実測で確認したうえでこの形にした。
+
+文書テキストを書き換える処理なので、`ensureSyntaxTree` が対象範囲を覆えなかった場合は
+採番を行わない（字下げだけを適用する）。半端な木で番号を書き換えるとノートが壊れる。
 
 ## Enter キーの扱い
 
