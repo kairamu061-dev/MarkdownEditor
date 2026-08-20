@@ -127,7 +127,9 @@ function markerBox(width: string): Decoration {
   let deco = markerBoxCache.get(width);
   if (!deco) {
     deco = Decoration.mark({
-      attributes: { style: `display:inline-block;width:${width};text-indent:0` },
+      attributes: {
+        style: `display:inline-block;width:${width};text-indent:0;white-space:pre`,
+      },
     });
     markerBoxCache.set(width, deco);
   }
@@ -463,7 +465,35 @@ const markupEnter = insertNewlineContinueMarkupCommand({ nonTightLists: false })
 
 // Enter は quoteAwareEnter → markupEnter の順に試す。どちらも false を返した場合
 // （Markdown 文脈でない等）は既定のキーマップへ渡る
-const listAwareEnter: Command = (view) => quoteAwareEnter(view) || markupEnter(view);
+/**
+ * リストの遅延継続行で Enter を押すと行の内容が消えるのを防ぐ（BUG-027）。
+ *
+ * lang-markdown は「空の項目か」を `行のテキスト.slice(マークの桁)` で判定する。
+ * 遅延継続行はマークが無いぶん桁がずれるので、`- aaaa` の次の行に `a` とだけ書くと
+ * `"a".slice(2)` が空になり「空の項目」と誤判定される。そのまま空項目の処理が走ると
+ * 行頭からカーソルまでが削除され、**入力した文字が消える**。
+ *
+ * 桁より右に文字が無い遅延継続行に限って、素の改行にして回避する。
+ * `  continued text` のように桁より右に本文がある継続行は誤判定しないので触らない。
+ */
+const lazyListEnter: Command = (view) => {
+  const { state } = view;
+  if (state.selection.ranges.length !== 1) return false;
+  const range = state.selection.main;
+  if (!range.empty) return false;
+  const line = state.doc.lineAt(range.head);
+  if (!/\S/.test(line.text)) return false; // 本当に空の行は通常処理へ
+  if (/^\s*([-*+]|\d+[.)])(\s|$)/.test(line.text)) return false; // マークのある行は通常処理へ
+  const item = enclosingItem(state, line);
+  if (!item) return false;
+  const column = contentColumn(state, item);
+  if (column === null) return false;
+  if (/\S/.test(line.text.slice(column))) return false; // 誤判定しない形なので通常処理へ
+  return insertNewline(view);
+};
+
+const listAwareEnter: Command = (view) =>
+  quoteAwareEnter(view) || lazyListEnter(view) || markupEnter(view);
 
 // --- 番号付きリストの採番 ---------------------------------------------------
 // Tab / Shift+Tab で段を変えても番号が振り直されない、という報告への対応。
@@ -556,6 +586,19 @@ function renumberChanges(state: EditorState, pos: number): ChangeSpec[] | null {
 // 入れ子にならない**。構造が変わらないので番号も変わらず、「インデントしても
 // 番号が変わらない」ように見えていた。
 // 段を上げ下げする量は、隣接する項目の桁から決める。
+
+/** その行を含む ListItem（その行から始まるとは限らない）。無ければ null */
+function enclosingItem(state: EditorState, line: Line): SyntaxNode | null {
+  const indentLen = /^[ \t]*/.exec(line.text)![0].length;
+  for (
+    let node: SyntaxNode | null = syntaxTree(state).resolveInner(line.from + indentLen, 1);
+    node;
+    node = node.parent
+  ) {
+    if (node.name === "ListItem") return node;
+  }
+  return null;
+}
 
 /** その行から始まる ListItem。無ければ null */
 function itemStartingOn(state: EditorState, line: Line): SyntaxNode | null {

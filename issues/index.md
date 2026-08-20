@@ -41,3 +41,5 @@
 | [BUG-024](./tickets/BUG-024.md) | アイコンを差し替えても exe のアイコンが更新されない | tooling | Closed |
 | [BUG-025](./tickets/BUG-025.md) | 2 項目のリストで空項目の Enter がマークを消さず上に空行を挿入する | editor/live-preview | Closed |
 | [BUG-026](./tickets/BUG-026.md) | 番号付きリストで Tab が入れ子にならず、番号も振り直されない | editor/live-preview | Fixed |
+| [BUG-027](./tickets/BUG-027.md) | リストの遅延継続行で Enter を押すと入力した文字が消える | editor/live-preview | Fixed |
+| [BUG-028](./tickets/BUG-028.md) | 番号付きリストの IME 変換中の文字が一行下に出る | editor/live-preview | Fixed |
