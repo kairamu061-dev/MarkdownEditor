@@ -47,7 +47,7 @@ CSS で幅を決め切る。番号付きは**置換しない**（番号は生テ
 | 対象 | デコレーション | 与える値 |
 |------|----------------|----------|
 | 行頭の空白 | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: d * step; text-indent: 0` |
-| 番号付きマーク `1. ` | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: 文字数 * 1ch; text-indent: 0` |
+| 番号付きマーク `1. ` | `Decoration.mark`（**replace ではない**） | `display:inline-block; width: 文字数 * 1ch; text-indent: 0; white-space: pre` |
 | 行 | `Decoration.line` | `padding-left: base + d * step + markerWidth` |
 | 行 | 同上 | `text-indent: -(行頭空白があれば d * step) - (マーク行なら markerWidth)` |
 | 行 | 同上 | 段 1 以降は `background-image` に `linear-gradient` を d 本重ねて縦ガイド線 |
@@ -66,6 +66,11 @@ CSS で幅を決め切る。番号付きは**置換しない**（番号は生テ
 カーソルが乗って `- ` がソース表示に戻っている行だけは、`"- "` の実幅と
 `--md-list-bullet-width` の差ぶん本文がずれる。これは整形表示とソース表示の
 差そのもので、live-preview の他の記法と同じ性質。
+
+**番号付きマーカーの箱には `white-space: pre` も要る。** カーソルが箱の末尾境界に来るため、
+IME の変換中の文字をブラウザが箱の中のテキストノードへ継ぎ足す。幅が固定されているので
+そのままだと**箱の中で折り返し**、未確定の文字が一行下に表示される（BUG-028）。
+弾丸は置換なので同じ箱が無く、この問題は起きない。
 
 **幅を固定する inline-block には必ず `text-indent: 0` を置くこと。** `text-indent` は継承
 プロパティで、`inline-block` はブロックコンテナなので、行に掛けた負の `text-indent` を
@@ -164,7 +169,12 @@ Enter は `Prec.highest` の 1 バインドにまとめ、次の順で試す。
 どちらも `false` を返したら既定のキーマップへ渡る。
 
 1. `quoteAwareEnter` — 行頭が `>` でない遅延継続行では plain な改行にする（BUG-011）
-2. `insertNewlineContinueMarkupCommand({ nonTightLists: false })` — 空の箇条書き項目で
+2. `lazyListEnter` — **リスト**の遅延継続行のうち、本文が項目の開始桁より左で終わって
+   いるものを plain な改行にする（BUG-027）。lang-markdown の「空の項目か」の判定は
+   `行のテキスト.slice(マークの桁)` で行うため、`- aaaa` の次行に `a` とだけ書くと
+   `"a".slice(2)` が空になり、中身があるのに空項目と誤判定されて行の内容が消える。
+   桁より右に本文がある通常の継続行は誤判定しないので、そちらは委譲する
+3. `insertNewlineContinueMarkupCommand({ nonTightLists: false })` — 空の箇条書き項目で
    Enter を押したとき、マークを消さず「上に空行を挿入して loose 化する」lang-markdown の
    既定分岐を止める（BUG-025）。この分岐は**タイトな 2 項目リストの 2 番目**でだけ起きる
 
