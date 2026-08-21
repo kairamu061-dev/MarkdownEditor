@@ -56,11 +56,11 @@
 
 ### 6. 仕上げ
 
-- [ ] `docs/project_overview.md` の「カラーパレット」に新変数を反映
-- [ ] `docs/settings/spec.md` の機能一覧に theme の行を追加
-- [ ] `docs/settings/overview.md` の「作らないもの: テーマ切り替え（Nord ダーク固定のまま）」を修正
-- [ ] 親（`docs/settings/`）の design.md / tasks.md にサブ項目リンクを追記
-- [ ] `docs/settings/test-cases.md` にテストケースを追加
+- [x] `docs/project_overview.md` の「カラーパレット」に新変数を反映
+- [x] `docs/settings/spec.md` の機能一覧に theme の行を追加
+- [x] `docs/settings/overview.md` の「作らないもの: テーマ切り替え（Nord ダーク固定のまま）」を修正
+- [x] 親（`docs/settings/`）の design.md / tasks.md にサブ項目リンクを追記
+- [x] `docs/settings/test-cases.md` にテストケースを追加
 - [ ] Windows 実機の確認チェックリストを作成
 
 ## 依存関係
