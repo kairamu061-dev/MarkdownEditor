@@ -56,7 +56,7 @@ const codeBlockTheme = EditorView.baseTheme({
   ".cm-codeblock-line": {
     fontFamily: "'Cascadia Code', Consolas, monospace",
     fontSize: "0.9em",
-    backgroundColor: "var(--bg-hover)",
+    backgroundColor: "var(--code-bg)",
   },
 });
 
