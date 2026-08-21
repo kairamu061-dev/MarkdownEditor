@@ -15,7 +15,7 @@
 src/styles/nord.css        # 既定値（Nord）。--heading1..6 / --code-* を新設
 src/settings/
 ├── index.ts               # 既存。配色セクションをモーダルに追加
-├── palette.ts             # 新規: 項目定義（22 個）とプリセット 2 種
+├── palette.ts             # 新規: 項目定義（23 個）とプリセット 2 種
 ├── theme.ts               # 新規: 適用・購読・上書きの解決
 ├── api.ts                 # 既存 + save_theme_settings
 └── settings.css           # 既存 + 配色セクションのスタイル
@@ -41,7 +41,7 @@ src-tauri/src/settings.rs   # ThemeSettings + save_theme_settings コマンド
 **プリセットの色も CSS 変数として明示的に設定する。** `nord.css` の既定値に頼って
 「Nord のときは何も設定しない」とはしない — ライトから Nord へ戻すときに
 `removeProperty` の取りこぼしが起きやすく、片方の色だけ残る事故になるため。
-22 項目は常に全部設定する。
+23 項目は常に全部設定する。
 
 ## データ構造
 
@@ -50,7 +50,7 @@ src-tauri/src/settings.rs   # ThemeSettings + save_theme_settings コマンド
 export type ColorKey =
   | "bgPrimary" | "bgSidebar" | "bgHover" | "border" | "text" | "textStrong"
   | "heading1" | "heading2" | "heading3" | "heading4" | "heading5" | "heading6"
-  | "codeKeyword" | "codeString" | "codeComment" | "codeNumber" | "codeType"
+  | "codeKeyword" | "codeString" | "codeComment" | "codeNumber" | "codeType" | "codeBg"
   | "accent" | "accentSecondary" | "syntaxMark" | "quote" | "error";
 
 export type ColorGroup = "basic" | "heading" | "code" | "other";
@@ -62,7 +62,7 @@ export interface ColorItem {
   group: ColorGroup;
 }
 
-export const COLOR_ITEMS: readonly ColorItem[];        // 22 個・spec.md の表と同順
+export const COLOR_ITEMS: readonly ColorItem[];        // 23 個・spec.md の表と同順
 export type PresetName = "nord" | "light";
 export interface Preset { name: PresetName; label: string; dark: boolean; colors: Record<ColorKey, string> }
 export const PRESETS: Record<PresetName, Preset>;

@@ -1,10 +1,10 @@
 /*
  * 配色の項目定義とプリセット（docs/settings/theme/spec.md の表と同一）
  *
- * 画面に出ている色は、すべてこの 22 項目のどれかに辿り着くこと。
+ * 画面に出ている色は、すべてこの 23 項目のどれかに辿り着くこと。
  * どれにも属さない色が 1 つでも残ると、利用者が全項目を変えてもそこだけ
  * Nord の色が残り、ライトのプリセットで浮く。
- * 検査: grep -rhno "var(--[a-z0-9-]*" src/ が 22 項目 + 導出 4 個に収まること
+ * 検査: grep -rhno "var(--[a-z0-9-]*" src/ が 23 項目 + 導出 4 個に収まること
  */
 
 export type ColorKey =
@@ -25,6 +25,7 @@ export type ColorKey =
   | "codeComment"
   | "codeNumber"
   | "codeType"
+  | "codeBg"
   | "accent"
   | "accentSecondary"
   | "syntaxMark"
@@ -68,6 +69,7 @@ export const COLOR_ITEMS: readonly ColorItem[] = [
   { key: "codeComment", cssVar: "--code-comment", label: "コメント", group: "code" },
   { key: "codeNumber", cssVar: "--code-number", label: "数値・真偽値", group: "code" },
   { key: "codeType", cssVar: "--code-type", label: "型名・クラス名", group: "code" },
+  { key: "codeBg", cssVar: "--code-bg", label: "コードの下地", group: "code" },
 
   { key: "accent", cssVar: "--accent", label: "アクセント", group: "other" },
   { key: "accentSecondary", cssVar: "--accent-secondary", label: "第 2 アクセント", group: "other" },
@@ -113,6 +115,7 @@ export const PRESETS: Record<PresetName, Preset> = {
       codeComment: "#848c9d",
       codeNumber: "#b48ead",
       codeType: "#8fbcbb",
+      codeBg: "#434c5e",
       accent: "#88c0d0",
       accentSecondary: "#81a1c1",
       syntaxMark: "#5e81ac",
@@ -142,6 +145,8 @@ export const PRESETS: Record<PresetName, Preset> = {
       codeComment: "#7a8494",
       codeNumber: "#8b5a96",
       codeType: "#2c7a8c",
+      // 選択範囲（bgHover #dfe3e8）と同色にしないこと。コード内の選択が見えなくなる
+      codeBg: "#f0f2f5",
       accent: "#2c7a8c",
       accentSecondary: "#3b6ea5",
       syntaxMark: "#6b7d99",

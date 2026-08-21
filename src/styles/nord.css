@@ -59,6 +59,12 @@
   --code-comment: color-mix(in srgb, var(--text) 40%, var(--border));
   --code-number: var(--nord15);
   --code-type: var(--nord7);
+  /*
+   * コード（ブロック・インライン・表の中）の下地。--bg-hover と同じ色だが
+   * 変数は分ける。--bg-hover は選択範囲の色でもあるので、共有したままだと
+   * 明るい配色にしたときコード内の選択が下地と同色になって見えなくなる
+   */
+  --code-bg: var(--nord2);
 
   /*
    * 導出される色（設定項目にしない）

@@ -63,7 +63,7 @@ export const nordHighlightStyle = HighlightStyle.define([
     tag: t.monospace,
     fontFamily: MONO_FONT,
     fontSize: "0.9em",
-    backgroundColor: "var(--bg-hover)",
+    backgroundColor: "var(--code-bg)",
     borderRadius: "3px",
   },
   { tag: t.link, color: "var(--accent)", textDecoration: "underline" },

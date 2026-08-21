@@ -209,7 +209,7 @@ const tablePreviewTheme = EditorView.baseTheme({
   ".cm-table code": {
     fontFamily: "'Cascadia Code', Consolas, monospace",
     fontSize: "0.9em",
-    backgroundColor: "var(--bg-hover)",
+    backgroundColor: "var(--code-bg)",
     borderRadius: "3px",
     padding: "0 2px",
   },
