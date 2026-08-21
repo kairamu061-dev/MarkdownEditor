@@ -38,12 +38,35 @@
   --error: var(--nord11);
   --warning: var(--nord13);
   --success: var(--nord14);
-  --scrollbar-thumb: var(--nord3);
-  --scrollbar-thumb-hover: var(--nord10);
   --syntax-mark: var(--nord10);
-  --comment: color-mix(in srgb, var(--nord4) 40%, var(--nord3));
   /* 引用（blockquote）: 左バー・本文・背景の 3 要素で「引用らしさ」を出す */
   --quote-bar: var(--nord9);
-  --quote-text: color-mix(in srgb, var(--nord4) 75%, var(--nord3));
-  --quote-bg: color-mix(in srgb, var(--nord9) 10%, transparent);
+
+  /*
+   * 見出し・コードの色（settings/theme の設定項目）
+   * 用途別エイリアスを共有していると、たとえば見出し 4 を変えるだけで
+   * カーソル・リンク・リストの弾丸まで変わってしまう。利用者が調整する単位で
+   * 変数を分ける。既定値は分離前とまったく同じ色。
+   */
+  --heading1: var(--nord13);
+  --heading2: var(--nord14);
+  --heading3: var(--nord15);
+  --heading4: var(--nord8);
+  --heading5: var(--nord9);
+  --heading6: var(--nord9);
+  --code-keyword: var(--nord9);
+  --code-string: var(--nord14);
+  --code-comment: color-mix(in srgb, var(--text) 40%, var(--border));
+  --code-number: var(--nord15);
+  --code-type: var(--nord7);
+
+  /*
+   * 導出される色（設定項目にしない）
+   * 混合元は必ず上のエイリアス側を指す。--nordN を指すと、利用者が色を
+   * 上書きしてもここだけ Nord のまま取り残される。
+   */
+  --quote-text: color-mix(in srgb, var(--text) 75%, var(--border));
+  --quote-bg: color-mix(in srgb, var(--quote-bar) 10%, transparent);
+  --scrollbar-thumb: var(--border);
+  --scrollbar-thumb-hover: var(--syntax-mark);
 }
