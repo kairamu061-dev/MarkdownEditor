@@ -192,7 +192,7 @@ body {
 
 /* スクラッチ文書（未保存）。淡色 + クリックしても反応しない */
 .note-title-label.note-title-empty {
-  color: var(--nord3);
+  color: var(--border);
   cursor: default;
 }
 

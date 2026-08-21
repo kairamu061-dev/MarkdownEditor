@@ -6,20 +6,20 @@
 
 ### 1. 変数の整備（この段階では見た目が 1 ピクセルも変わらないこと）
 
-- [ ] `nord.css` に `--heading1`〜`--heading6` を追加（既定値は現在の色と同じ）
-- [ ] `nord.css` に `--code-keyword` / `--code-string` / `--code-comment` /
+- [x] `nord.css` に `--heading1`〜`--heading6` を追加（既定値は現在の色と同じ）
+- [x] `nord.css` に `--code-keyword` / `--code-string` / `--code-comment` /
       `--code-number` / `--code-type` を追加
-- [ ] `--comment` を廃止し `--code-comment` に統合（`color-mix` をやめて固定値）
-- [ ] `--quote-text` / `--quote-bg` の混合元を `--text` / `--border` / `--quote-bar` に張り替え
-- [ ] `editor/theme.ts` の見出し・コードの色を新変数へ差し替え
-- [ ] `app.css:195` の `var(--nord3)` を `var(--border)` へ
-- [ ] `--scrollbar-thumb` / `--scrollbar-thumb-hover` を `--border` / `--syntax-mark` へ
+- [x] `--comment` を `--code-comment` に改名し、混合元を `--text` / `--border` へ
+- [x] `--quote-text` / `--quote-bg` の混合元を `--text` / `--border` / `--quote-bar` に張り替え
+- [x] `editor/theme.ts` の見出し・コードの色を新変数へ差し替え
+- [x] `app.css:195` の `var(--nord3)` を `var(--border)` へ
+- [x] `--scrollbar-thumb` / `--scrollbar-thumb-hover` を `--border` / `--syntax-mark` へ
       （どちらも現状と同じ色。この段階で見た目は変わらない）
-- [ ] 検査: `grep -rn "var(--nord" src/ | grep -v styles/nord.css` が空になる
-- [ ] 検査: `src/` で使われている色の変数が、22 項目か「導出される色」のどちらかに
+- [x] 検査: `grep -rn "var(--nord" src/ | grep -v styles/nord.css` が空になる
+- [x] 検査: `src/` で使われている色の変数が、22 項目か「導出される色」のどちらかに
       収まっている（grep では出ないので目視で突き合わせる）
-- [ ] 検査: 変更前後でスクリーンショットが一致する（配色が変わっていないこと）
-- [ ] `--comment` を消す前に `explorer.css` / `settings.css` からの参照が無いか確認
+- [x] 検査: 変更前後でスクリーンショットが一致する（配色が変わっていないこと）
+- [x] `--comment` を消す前に `explorer.css` / `settings.css` からの参照が無いか確認
       （参照が残ると色が消えて継承色になり、エディタ画面のスクショ比較では気づけない）
 
 ### 2. データと永続化
@@ -76,4 +76,4 @@
 
 ## ステータス
 
-未着手。
+進行中 — 1（変数の整備）完了。次は 2（データと永続化）。

@@ -132,7 +132,7 @@ pub fn save_theme_settings(app: tauri::AppHandle, theme: ThemeSettings) -> Resul
 | `--heading6` | `var(--nord9)` | `--accent-secondary` を参照していた |
 | `--code-keyword` | `var(--nord9)` | `--accent-secondary` を参照していた |
 | `--code-string` | `var(--nord14)` | `--success` を参照していた |
-| `--code-comment` | `#8b93a3` | `color-mix()` の計算値。**混合をやめて固定値にする** |
+| `--code-comment` | `color-mix(--text 40%, --border)` | `--comment` から改名。混合元を `--nord4`/`--nord3` から張り替え（実効値は同じ `#848c9d`） |
 | `--code-number` | `var(--nord15)` | `--nord15` を**直接**参照していた |
 | `--code-type` | `var(--nord7)` | `--nord7` を**直接**参照していた |
 
@@ -155,7 +155,7 @@ pub fn save_theme_settings(app: tauri::AppHandle, theme: ThemeSettings) -> Resul
 
 | 変数 | 現状 | 変更後 |
 |------|------|--------|
-| `--comment` | `color-mix(--nord4 / --nord3)` | 廃止し `--code-comment` に統合 |
+| `--comment` | `color-mix(--nord4 / --nord3)` | `--code-comment` に改名し、混合元を `--text` / `--border` へ |
 | `--quote-text` | `color-mix(--nord4 / --nord3)` | `color-mix(--text / --border)` |
 | `--quote-bg` | `color-mix(--nord9 10%)` | `color-mix(--quote-bar 10%)` |
 | `--scrollbar-thumb` | `var(--nord3)` | `var(--border)`（同じ色） |
