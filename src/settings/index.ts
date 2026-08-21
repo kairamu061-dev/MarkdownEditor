@@ -3,6 +3,7 @@ import {
   saveEditorSettings,
   type EditorSettings,
 } from "./api";
+import { applyTheme } from "./theme";
 
 const FONT_SIZE_MIN = 10;
 const FONT_SIZE_MAX = 32;
@@ -145,6 +146,7 @@ export function initSettings(): void {
     .then((settings) => {
       currentEditor = settings.editor;
       applyEditorSettings(settings.editor);
+      applyTheme(settings.theme);
     })
     .catch((e) => console.error("get_settings failed:", e));
 }

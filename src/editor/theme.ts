@@ -1,4 +1,5 @@
 import { EditorView } from "@codemirror/view";
+import { Compartment } from "@codemirror/state";
 import { HighlightStyle } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 
@@ -35,8 +36,16 @@ export const nordTheme = EditorView.theme(
         backgroundColor: "var(--bg-hover)",
       },
   },
-  { dark: true },
+  // 明暗の指定はここではなく darkCompartment が持つ。EditorView.theme の
+  // 第 2 引数 { dark } は EditorView.darkTheme ファセットを立てているだけなので、
+  // ファセットだけを Compartment に入れれば、テーマ定義を作り直さずに
+  // ライト/ダークを切り替えられる（settings/theme のプリセット切り替え）
 );
+
+/** ライト/ダークの切り替え用。設定の変更時に reconfigure する */
+export const darkCompartment = new Compartment();
+
+export const darkTheme = (dark: boolean) => EditorView.darkTheme.of(dark);
 
 export const nordHighlightStyle = HighlightStyle.define([
   // t.heading (base) matches TableHeader cells; level-specific rules take precedence for ATX headings

@@ -31,17 +31,17 @@
 
 ### 3. パレットと適用
 
-- [ ] `palette.ts`: `COLOR_ITEMS`（22 項目）と `PRESETS`（nord / light）
-- [ ] `theme.ts`: `applyTheme` / `resolvedColors` / `subscribeDark` / `isValidColor`
-- [ ] 起動時に `applyTheme` を呼ぶ（`initSettings` 内）
-- [ ] 未知のプリセット名・未知の項目名・不正な色値を捨てる処理
+- [x] `palette.ts`: `COLOR_ITEMS`（22 項目）と `PRESETS`（nord / light）
+- [x] `theme.ts`: `applyTheme` / `resolvedColors` / `subscribeDark` / `isValidColor`
+- [x] 起動時に `applyTheme` を呼ぶ（`initSettings` 内）
+- [x] 未知のプリセット名・未知の項目名・不正な色値を捨てる処理
 
 ### 4. ライト/ダークの切り替え
 
-- [ ] `editor/theme.ts` から `{ dark: true }` を外し `darkCompartment` を追加
-- [ ] `EditorHandle.setDark` を追加
-- [ ] `main.ts` で `subscribeDark` と繋ぐ
-- [ ] ライトテーマで境界線・選択範囲・スクロールバーが破綻しないか目視
+- [x] `editor/theme.ts` から `{ dark: true }` を外し `darkCompartment` を追加
+- [x] `EditorHandle.setDark` を追加
+- [x] `main.ts` で `subscribeDark` と繋ぐ
+- [x] ライトテーマで境界線・選択範囲・スクロールバーが破綻しないか目視
 
 ### 5. 設定モーダルの配色セクション
 
@@ -76,4 +76,4 @@
 
 ## ステータス
 
-進行中 — 1（変数の整備）・2（データと永続化）完了。次は 3（パレットと適用）。
+進行中 — 1〜4 完了。次は 5（設定モーダルの配色セクション）。
