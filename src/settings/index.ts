@@ -1,9 +1,11 @@
 import {
   getSettings,
   saveEditorSettings,
+  saveThemeSettings,
   type EditorSettings,
 } from "./api";
-import { applyTheme } from "./theme";
+import { applyTheme, currentTheme } from "./theme";
+import { createThemeSection, invalidHexInputs } from "./theme-section";
 
 const FONT_SIZE_MIN = 10;
 const FONT_SIZE_MAX = 32;
@@ -78,6 +80,12 @@ function openModal(): void {
   familySelect.value = current ?? "";
   familyField.appendChild(familySelect);
 
+  // キャンセル時に戻す先。**モーダルを開いた時点**の値を控える。
+  // applyTheme はプレビューのたびに現在値を書き換えるので、閉じるときに
+  // currentTheme() を読んでも「プレビュー後の値」しか得られない
+  const themeSnapshot = currentTheme();
+  const themeSection = createThemeSection(themeSnapshot);
+
   const error = document.createElement("div");
   error.className = "settings-error";
   error.hidden = true;
@@ -91,7 +99,7 @@ function openModal(): void {
   save.textContent = "保存";
   buttons.append(cancel, save);
 
-  modal.append(title, sizeField, familyField, error, buttons);
+  modal.append(title, sizeField, familyField, themeSection.element, error, buttons);
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
   sizeInput.focus();
@@ -100,14 +108,19 @@ function openModal(): void {
     overlay.remove();
     window.removeEventListener("keydown", onKeydown);
   };
+  /** 破棄して閉じる。プレビュー中の配色を開いたときの状態へ戻す */
+  const discard = () => {
+    applyTheme(themeSnapshot);
+    close();
+  };
   const onKeydown = (e: KeyboardEvent) => {
-    if (e.key === "Escape") close();
+    if (e.key === "Escape") discard();
   };
   window.addEventListener("keydown", onKeydown);
   overlay.addEventListener("mousedown", (e) => {
-    if (e.target === overlay) close();
+    if (e.target === overlay) discard();
   });
-  cancel.addEventListener("click", close);
+  cancel.addEventListener("click", discard);
 
   save.addEventListener("click", async () => {
     const rawSize = Number(sizeInput.value) || FONT_SIZE_DEFAULT;
@@ -117,13 +130,25 @@ function openModal(): void {
       fontSize: fontSize === FONT_SIZE_DEFAULT ? null : fontSize,
       fontFamily,
     };
+    const bad = invalidHexInputs(themeSection.element);
+    if (bad.length > 0) {
+      error.textContent = `色の指定が正しくありません（${bad[0]}）。#rrggbb の形式で入力してください`;
+      error.hidden = false;
+      return;
+    }
+
+    const theme = themeSection.draft();
     try {
+      // 2 つの部分更新コマンドを続けて呼ぶ。どちらかが失敗したら閉じない。
+      // 画面の配色はプレビューのまま残す（spec.md のエラーケース）
       await saveEditorSettings(editor);
       currentEditor = editor;
       applyEditorSettings(editor);
+      await saveThemeSettings(theme);
+      applyTheme(theme);
       close();
     } catch (e) {
-      console.error("save_editor_settings failed:", e);
+      console.error("saving settings failed:", e);
       error.textContent = "設定の保存に失敗しました";
       error.hidden = false;
     }
