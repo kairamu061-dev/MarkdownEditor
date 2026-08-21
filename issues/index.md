@@ -40,10 +40,10 @@
 | [BUG-023](./tickets/BUG-023.md) | verify-build.bat が Linux 側の node_modules を再利用してビルド不能 | tooling | Closed |
 | [BUG-024](./tickets/BUG-024.md) | アイコンを差し替えても exe のアイコンが更新されない | tooling | Closed |
 | [BUG-025](./tickets/BUG-025.md) | 2 項目のリストで空項目の Enter がマークを消さず上に空行を挿入する | editor/live-preview | Closed |
-| [BUG-026](./tickets/BUG-026.md) | 番号付きリストで Tab が入れ子にならず、番号も振り直されない | editor/live-preview | Fixed |
-| [BUG-027](./tickets/BUG-027.md) | リストの遅延継続行で Enter を押すと入力した文字が消える | editor/live-preview | Fixed |
-| [BUG-028](./tickets/BUG-028.md) | 番号付きリストの IME 変換中の文字が一行下に出る | editor/live-preview | Fixed |
-| [BUG-029](./tickets/BUG-029.md) | リストの遅延継続行が項目の本文位置まで字下げされる | editor/live-preview | Fixed |
-| [BUG-030](./tickets/BUG-030.md) | インデントされたリスト行でカーソルが大きく飛ぶ | editor/live-preview | Fixed |
-| [BUG-031](./tickets/BUG-031.md) | 空のリスト項目を Backspace で消すと空白だけの行が残る | editor/live-preview | Fixed |
-| [BUG-032](./tickets/BUG-032.md) | 番号付きリストで番号と本文のあいだに余分な隙間が空く | editor/live-preview | Fixed |
+| [BUG-026](./tickets/BUG-026.md) | 番号付きリストで Tab が入れ子にならず、番号も振り直されない | editor/live-preview | Closed |
+| [BUG-027](./tickets/BUG-027.md) | リストの遅延継続行で Enter を押すと入力した文字が消える | editor/live-preview | Closed |
+| [BUG-028](./tickets/BUG-028.md) | 番号付きリストの IME 変換中の文字が一行下に出る | editor/live-preview | Closed |
+| [BUG-029](./tickets/BUG-029.md) | リストの遅延継続行が項目の本文位置まで字下げされる | editor/live-preview | Closed |
+| [BUG-030](./tickets/BUG-030.md) | インデントされたリスト行でカーソルが大きく飛ぶ | editor/live-preview | Closed |
+| [BUG-031](./tickets/BUG-031.md) | 空のリスト項目を Backspace で消すと空白だけの行が残る | editor/live-preview | Closed |
+| [BUG-032](./tickets/BUG-032.md) | 番号付きリストで番号と本文のあいだに余分な隙間が空く | editor/live-preview | Closed |
