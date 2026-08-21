@@ -61,7 +61,7 @@
 - [x] `docs/settings/overview.md` の「作らないもの: テーマ切り替え（Nord ダーク固定のまま）」を修正
 - [x] 親（`docs/settings/`）の design.md / tasks.md にサブ項目リンクを追記
 - [x] `docs/settings/test-cases.md` にテストケースを追加
-- [ ] Windows 実機の確認チェックリストを作成
+- [x] Windows 実機の確認チェックリストを作成
 
 ## 依存関係
 
@@ -76,4 +76,5 @@
 
 ## ステータス
 
-進行中 — 1〜5 完了。残りは 6（仕上げ）。
+実装完了（`c497ff7` 時点）。Windows 実機での確認待ち。
+E-01〜E-18 がユーザー確認で合格したら完了とする。
