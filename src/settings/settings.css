@@ -9,7 +9,10 @@
 }
 
 .settings-modal {
-  width: 320px;
+  width: 360px;
+  /* 配色セクションで縦に伸びるため、画面からはみ出さないよう頭打ちにする */
+  max-height: 80vh;
+  overflow-y: auto;
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -96,4 +99,115 @@
 .sidebar-gear-button:hover {
   background-color: var(--bg-hover);
   color: var(--text-strong);
+}
+
+/* --- 配色セクション（settings/theme） --- */
+
+.settings-theme {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-theme-heading {
+  margin-bottom: 8px;
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-theme-reset-all {
+  margin-bottom: 8px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: transparent;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-theme-reset-all:hover {
+  background-color: var(--bg-hover);
+}
+
+.settings-theme-group {
+  margin-bottom: 4px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.settings-theme-group > summary {
+  padding: 5px 8px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-theme-group[open] > summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-color-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.settings-color-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 上書きがある項目の印。幅を確保しておき、無いときは visibility ではなく
+   hidden 属性で消す（行の高さを揺らさないため flex の gap だけ残る） */
+.settings-color-overridden {
+  color: var(--accent);
+  font-size: 9px;
+}
+
+.settings-color-swatch {
+  width: 28px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.settings-color-hex {
+  width: 74px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: var(--bg-primary);
+  color: var(--text);
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  outline: none;
+}
+
+.settings-color-hex:focus {
+  border-color: var(--accent);
+}
+
+.settings-color-reset {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: transparent;
+  color: var(--text);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.settings-color-reset:hover {
+  background-color: var(--bg-hover);
 }
