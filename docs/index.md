@@ -24,3 +24,4 @@
   - [store](./settings/store/overview.md)
   - [vault-restore](./settings/vault-restore/overview.md)
   - [ui](./settings/ui/overview.md)
+  - [theme](./settings/theme/overview.md)
