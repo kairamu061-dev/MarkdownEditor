@@ -24,10 +24,10 @@
 
 ### 2. データと永続化
 
-- [ ] `settings.rs` に `ThemeSettings`（`preset` / `colors: BTreeMap`）を追加
-- [ ] `save_theme_settings` コマンドを追加し `lib.rs` に登録
-- [ ] Rust テスト: `theme` の往復・欠損時の既定・未知キーの保持
-- [ ] `api.ts` に `ThemeSettings` 型と `saveThemeSettings` を追加
+- [x] `settings.rs` に `ThemeSettings`（`preset` / `colors: BTreeMap`）を追加
+- [x] `save_theme_settings` コマンドを追加し `lib.rs` に登録
+- [x] Rust テスト: `theme` の往復・欠損時の既定・未知キーの保持
+- [x] `api.ts` に `ThemeSettings` 型と `saveThemeSettings` を追加
 
 ### 3. パレットと適用
 
@@ -76,4 +76,4 @@
 
 ## ステータス
 
-進行中 — 1（変数の整備）完了。次は 2（データと永続化）。
+進行中 — 1（変数の整備）・2（データと永続化）完了。次は 3（パレットと適用）。
