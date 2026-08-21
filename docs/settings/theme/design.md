@@ -15,7 +15,7 @@
 src/styles/nord.css        # 既定値（Nord）。--heading1..6 / --code-* を新設
 src/settings/
 ├── index.ts               # 既存。配色セクションをモーダルに追加
-├── palette.ts             # 新規: 項目定義（21 個）とプリセット 2 種
+├── palette.ts             # 新規: 項目定義（22 個）とプリセット 2 種
 ├── theme.ts               # 新規: 適用・購読・上書きの解決
 ├── api.ts                 # 既存 + save_theme_settings
 └── settings.css           # 既存 + 配色セクションのスタイル
@@ -41,7 +41,7 @@ src-tauri/src/settings.rs   # ThemeSettings + save_theme_settings コマンド
 **プリセットの色も CSS 変数として明示的に設定する。** `nord.css` の既定値に頼って
 「Nord のときは何も設定しない」とはしない — ライトから Nord へ戻すときに
 `removeProperty` の取りこぼしが起きやすく、片方の色だけ残る事故になるため。
-21 項目は常に全部設定する。
+22 項目は常に全部設定する。
 
 ## データ構造
 
@@ -51,7 +51,7 @@ export type ColorKey =
   | "bgPrimary" | "bgSidebar" | "bgHover" | "border" | "text" | "textStrong"
   | "heading1" | "heading2" | "heading3" | "heading4" | "heading5" | "heading6"
   | "codeKeyword" | "codeString" | "codeComment" | "codeNumber" | "codeType"
-  | "accent" | "quote" | "error" | "success";
+  | "accent" | "accentSecondary" | "syntaxMark" | "quote" | "error";
 
 export type ColorGroup = "basic" | "heading" | "code" | "other";
 
@@ -62,7 +62,7 @@ export interface ColorItem {
   group: ColorGroup;
 }
 
-export const COLOR_ITEMS: readonly ColorItem[];        // 21 個・spec.md の表と同順
+export const COLOR_ITEMS: readonly ColorItem[];        // 22 個・spec.md の表と同順
 export type PresetName = "nord" | "light";
 export interface Preset { name: PresetName; label: string; dark: boolean; colors: Record<ColorKey, string> }
 export const PRESETS: Record<PresetName, Preset>;
@@ -153,13 +153,17 @@ pub fn save_theme_settings(app: tauri::AppHandle, theme: ThemeSettings) -> Resul
 
 ### color-mix の張り替え
 
-| 変数 | 現状の混合元 | 変更後の混合元 |
-|------|-------------|---------------|
-| `--comment` | `--nord4` / `--nord3` | 廃止し `--code-comment` に統合 |
-| `--quote-text` | `--nord4` / `--nord3` | `--text` / `--border` |
-| `--quote-bg` | `--nord9` | `--quote-bar` |
+| 変数 | 現状 | 変更後 |
+|------|------|--------|
+| `--comment` | `color-mix(--nord4 / --nord3)` | 廃止し `--code-comment` に統合 |
+| `--quote-text` | `color-mix(--nord4 / --nord3)` | `color-mix(--text / --border)` |
+| `--quote-bg` | `color-mix(--nord9 10%)` | `color-mix(--quote-bar 10%)` |
+| `--scrollbar-thumb` | `var(--nord3)` | `var(--border)`（同じ色） |
+| `--scrollbar-thumb-hover` | `var(--nord10)` | `var(--syntax-mark)`（同じ色） |
 
 `--quote-bar` 自体は設定項目「引用」そのもの。ここを変えると本文色と背景も追従する。
+スクロールバーの 2 つは**現状と同じ色になる**ように張り替え先を選んだので、
+この段階では見た目が変わらない。
 
 ## ライト/ダークの切り替え
 

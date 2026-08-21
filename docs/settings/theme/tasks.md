@@ -13,8 +13,14 @@
 - [ ] `--quote-text` / `--quote-bg` の混合元を `--text` / `--border` / `--quote-bar` に張り替え
 - [ ] `editor/theme.ts` の見出し・コードの色を新変数へ差し替え
 - [ ] `app.css:195` の `var(--nord3)` を `var(--border)` へ
+- [ ] `--scrollbar-thumb` / `--scrollbar-thumb-hover` を `--border` / `--syntax-mark` へ
+      （どちらも現状と同じ色。この段階で見た目は変わらない）
 - [ ] 検査: `grep -rn "var(--nord" src/ | grep -v styles/nord.css` が空になる
+- [ ] 検査: `src/` で使われている色の変数が、22 項目か「導出される色」のどちらかに
+      収まっている（grep では出ないので目視で突き合わせる）
 - [ ] 検査: 変更前後でスクリーンショットが一致する（配色が変わっていないこと）
+- [ ] `--comment` を消す前に `explorer.css` / `settings.css` からの参照が無いか確認
+      （参照が残ると色が消えて継承色になり、エディタ画面のスクショ比較では気づけない）
 
 ### 2. データと永続化
 
@@ -25,7 +31,7 @@
 
 ### 3. パレットと適用
 
-- [ ] `palette.ts`: `COLOR_ITEMS`（21 項目）と `PRESETS`（nord / light）
+- [ ] `palette.ts`: `COLOR_ITEMS`（22 項目）と `PRESETS`（nord / light）
 - [ ] `theme.ts`: `applyTheme` / `resolvedColors` / `subscribeDark` / `isValidColor`
 - [ ] 起動時に `applyTheme` を呼ぶ（`initSettings` 内）
 - [ ] 未知のプリセット名・未知の項目名・不正な色値を捨てる処理
