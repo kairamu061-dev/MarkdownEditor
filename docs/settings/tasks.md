@@ -5,7 +5,9 @@
 - [store](./store/tasks.md)
 - [vault-restore](./vault-restore/tasks.md)
 - [ui](./ui/tasks.md)
+- [theme](./theme/tasks.md)
 
 ## 依存関係
 
-- store → vault-restore / ui（両者は store のコマンド・ヘルパを使う）
+- store → vault-restore / ui / theme（いずれも store のコマンド・ヘルパを使う）
+- ui → theme（配色セクションは ui の設定モーダルの中に作る）

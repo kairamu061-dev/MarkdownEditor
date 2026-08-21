@@ -5,6 +5,7 @@
 - [store](./store/design.md) — settings.json の読み書き基盤（Rust）
 - [vault-restore](./vault-restore/design.md) — 保管庫の記憶と起動時復元
 - [ui](./ui/design.md) — 設定モーダルとフォント反映
+- [theme](./theme/design.md) — 配色プリセットと項目ごとの色の上書き
 
 ## 横断事項
 
