@@ -14,6 +14,7 @@ import {
   renameCurrentNote,
 } from "./explorer";
 import { initSettings } from "./settings";
+import { subscribeDark } from "./settings/theme";
 
 initTitlebar();
 initSidebar();
@@ -34,6 +35,9 @@ const editor = mountEditor(document.getElementById("main-content")!, {
   onDocChanged: explorerDocChanged,
 });
 editor.focus();
+// 配色プリセットの明暗をエディタへ伝える。subscribeDark は登録時に現在値で
+// 1 回呼ぶので、initSettings() が先に走っていても取りこぼさない
+subscribeDark((dark) => editor.setDark(dark));
 
 const noteTitle = mountInlineTitle(document.getElementById("note-title")!, {
   onRename: (name) => renameCurrentNote(name),

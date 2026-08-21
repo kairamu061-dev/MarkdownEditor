@@ -16,7 +16,7 @@ import {
 import { indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
-import { nordTheme, nordHighlightStyle } from "./theme";
+import { nordTheme, nordHighlightStyle, darkCompartment, darkTheme } from "./theme";
 import { SCRATCH_DOC } from "./scratch";
 
 export interface MountOptions {
@@ -32,6 +32,8 @@ export interface EditorHandle {
   /** undo 履歴をリセットして内容を差し替える（ファイル切り替え用） */
   setContent(text: string): void;
   focus(): void;
+  /** ライト/ダークの切り替え（CodeMirror の既定スタイルの明暗が変わる） */
+  setDark(dark: boolean): void;
   destroy(): void;
 }
 
@@ -70,8 +72,15 @@ export function mountEditor(
     );
   }
 
+  // 既定はダーク。settings/theme のプリセットに合わせて setDark で差し替える。
+  // setContent は setState で作り直すため、Compartment の中身は
+  // extensions に埋め込まず、状態を作るたびに現在値から組み立てる
+  let dark = true;
   const createState = (doc: string) =>
-    EditorState.create({ doc, extensions });
+    EditorState.create({
+      doc,
+      extensions: [...extensions, darkCompartment.of(darkTheme(dark))],
+    });
 
   const view = new EditorView({ state: createState(initialDoc), parent });
 
@@ -79,6 +88,10 @@ export function mountEditor(
     getContent: () => view.state.doc.toString(),
     setContent: (text) => view.setState(createState(text)),
     focus: () => view.focus(),
+    setDark: (next) => {
+      dark = next;
+      view.dispatch({ effects: darkCompartment.reconfigure(darkTheme(next)) });
+    },
     destroy: () => view.destroy(),
   };
 }
