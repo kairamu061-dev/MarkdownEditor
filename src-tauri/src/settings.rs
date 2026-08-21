@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -12,6 +13,7 @@ pub struct Settings {
     #[serde(default)]
     pub recent_vaults: Vec<String>,
     pub editor: EditorSettings,
+    pub theme: ThemeSettings,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
@@ -19,6 +21,19 @@ pub struct Settings {
 pub struct EditorSettings {
     pub font_family: Option<String>,
     pub font_size: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct ThemeSettings {
+    /// 配色プリセット名。None は既定（nord）
+    pub preset: Option<String>,
+    /// 利用者が上書きした色だけを持つ。**キーも値もここでは検証しない。**
+    /// 項目名を enum にすると、将来項目を増減したときに古い settings.json で
+    /// デシリアライズが失敗し theme 全体が既定に落ちる（＝配色が丸ごと消える）。
+    /// 未知のキー・不正な色を捨てる判断はフロント側に置く。
+    /// BTreeMap にしているのはキー順を安定させ、保存のたびに差分を出さないため
+    pub colors: BTreeMap<String, String>,
 }
 
 /// 未存在・破損時はデフォルト値（起動をブロックしない）
@@ -70,6 +85,18 @@ pub fn save_editor_settings(
     save(&path, &settings)
 }
 
+/// theme フィールドのみ部分更新する（editor と同じく lastVault を巻き込まない）
+#[tauri::command]
+pub fn save_theme_settings(
+    app: tauri::AppHandle,
+    theme: ThemeSettings,
+) -> Result<(), String> {
+    let path = settings_path(&app)?;
+    let mut settings = load(&path);
+    settings.theme = theme;
+    save(&path, &settings)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,9 +128,81 @@ mod tests {
                 font_family: Some("Meiryo".into()),
                 font_size: Some(16),
             },
+            theme: ThemeSettings {
+                preset: Some("light".into()),
+                colors: BTreeMap::from([
+                    ("bgPrimary".to_string(), "#101010".to_string()),
+                    ("heading1".to_string(), "#ff0000".to_string()),
+                ]),
+            },
         };
         save(&path, &settings).unwrap();
         assert_eq!(load(&path), settings);
+        fs::remove_file(&path).unwrap();
+    }
+
+    #[test]
+    fn theme_defaults_when_absent() {
+        let path = temp_file("theme-absent.json");
+        fs::write(&path, r#"{ "lastVault": "/v" }"#).unwrap();
+        let settings = load(&path);
+        assert_eq!(settings.theme, ThemeSettings::default());
+        assert_eq!(settings.theme.preset, None);
+        assert!(settings.theme.colors.is_empty());
+        fs::remove_file(&path).unwrap();
+    }
+
+    /// 項目名を enum にしていたら、将来項目を消したときにここで失敗して
+    /// theme 全体が既定に落ちる（＝利用者の配色が丸ごと消える）。
+    /// 未知のキーはそのまま保持し、捨てる判断はフロント側に任せる
+    #[test]
+    fn theme_keeps_unknown_colour_keys() {
+        let path = temp_file("theme-unknown.json");
+        fs::write(
+            &path,
+            r##"{ "theme": { "preset": "nord", "colors": { "notAnItem": "#123456", "text": "#ffffff" } } }"##,
+        )
+        .unwrap();
+        let settings = load(&path);
+        assert_eq!(settings.theme.colors.get("notAnItem").map(String::as_str), Some("#123456"));
+        assert_eq!(settings.theme.colors.get("text").map(String::as_str), Some("#ffffff"));
+        fs::remove_file(&path).unwrap();
+    }
+
+    /// 色として妥当かどうかも Rust 側では見ない（フロントで捨てる）
+    #[test]
+    fn theme_keeps_invalid_colour_values() {
+        let path = temp_file("theme-invalid.json");
+        fs::write(&path, r#"{ "theme": { "colors": { "text": "notacolour" } } }"#).unwrap();
+        let settings = load(&path);
+        assert_eq!(settings.theme.colors.get("text").map(String::as_str), Some("notacolour"));
+        fs::remove_file(&path).unwrap();
+    }
+
+    /// theme を保存しても lastVault / editor を巻き込まない（部分更新）
+    #[test]
+    fn saving_theme_preserves_other_fields() {
+        let path = temp_file("theme-partial.json");
+        let original = Settings {
+            last_vault: Some("/home/user/notes".into()),
+            recent_vaults: vec!["/home/user/notes".into()],
+            editor: EditorSettings { font_family: Some("Meiryo".into()), font_size: Some(16) },
+            theme: ThemeSettings::default(),
+        };
+        save(&path, &original).unwrap();
+
+        let mut updated = load(&path);
+        updated.theme = ThemeSettings {
+            preset: Some("light".into()),
+            colors: BTreeMap::from([("accent".to_string(), "#abcdef".to_string())]),
+        };
+        save(&path, &updated).unwrap();
+
+        let reloaded = load(&path);
+        assert_eq!(reloaded.last_vault, original.last_vault);
+        assert_eq!(reloaded.recent_vaults, original.recent_vaults);
+        assert_eq!(reloaded.editor, original.editor);
+        assert_eq!(reloaded.theme.preset.as_deref(), Some("light"));
         fs::remove_file(&path).unwrap();
     }
 
