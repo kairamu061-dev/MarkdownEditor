@@ -47,4 +47,4 @@
 | [BUG-030](./tickets/BUG-030.md) | インデントされたリスト行でカーソルが大きく飛ぶ | editor/live-preview | Closed |
 | [BUG-031](./tickets/BUG-031.md) | 空のリスト項目を Backspace で消すと空白だけの行が残る | editor/live-preview | Closed |
 | [BUG-032](./tickets/BUG-032.md) | 番号付きリストで番号と本文のあいだに余分な隙間が空く | editor/live-preview | Closed |
-| [BUG-033](./tickets/BUG-033.md) | コードブロックの中でテキストを選択しても反転して見えない | editor/code-highlight | Open |
+| [BUG-033](./tickets/BUG-033.md) | コードブロックの中でテキストを選択しても反転して見えない | editor/code-highlight | Fixed |
