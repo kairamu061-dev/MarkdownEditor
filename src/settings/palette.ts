@@ -115,7 +115,9 @@ export const PRESETS: Record<PresetName, Preset> = {
       codeComment: "#848c9d",
       codeNumber: "#b48ead",
       codeType: "#8fbcbb",
-      codeBg: "#434c5e",
+      // 選択・ホバー背景（#434c5e）とは別の色にすること。同じ色だと
+      // コードブロック内の選択が見えない（BUG-033）
+      codeBg: "#3b4252",
       accent: "#88c0d0",
       accentSecondary: "#81a1c1",
       syntaxMark: "#5e81ac",

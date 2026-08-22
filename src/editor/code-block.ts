@@ -56,7 +56,22 @@ const codeBlockTheme = EditorView.baseTheme({
   ".cm-codeblock-line": {
     fontFamily: "'Cascadia Code', Consolas, monospace",
     fontSize: "0.9em",
+    // 下地は行そのものではなく擬似要素に敷く（BUG-033）。
+    // drawSelection() の選択レイヤは .cm-scroller の中で z-index: -2 に置かれる。
+    // 行に background-color を掛けると、行は通常フローの要素として
+    // その手前に描かれ、選択のハイライトを覆い隠してしまう
+    position: "relative",
+  },
+  ".cm-codeblock-line::before": {
+    content: '""',
+    position: "absolute",
+    inset: "0",
+    // 選択レイヤ（-2）より後ろ。.cm-content は position: static で
+    // 重ね合わせコンテキストを作らないため、この -3 は .cm-scroller の
+    // コンテキストで評価され、選択レイヤより下に入る
+    zIndex: "-3",
     backgroundColor: "var(--code-bg)",
+    pointerEvents: "none",
   },
 });
 

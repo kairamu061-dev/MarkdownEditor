@@ -165,6 +165,29 @@ pub fn save_theme_settings(app: tauri::AppHandle, theme: ThemeSettings) -> Resul
 スクロールバーの 2 つは**現状と同じ色になる**ように張り替え先を選んだので、
 この段階では見た目が変わらない。
 
+## コードブロックの下地と選択レイヤの重なり（BUG-033）
+
+`drawSelection()` の選択レイヤは `.cm-scroller`（`position: relative; z-index: 0`＝
+重ね合わせコンテキスト）の中に `z-index: -2` で置かれる。`.cm-content` は
+`position: static` で重ね合わせコンテキストを作らないため、`.cm-line` の背景は
+**通常フローの要素として選択レイヤより手前に描かれ、選択のハイライトを覆い隠す**。
+
+そこで下地を行そのものではなく擬似要素へ移し、選択レイヤより後ろに置く。
+
+```
+.cm-codeblock-line        { position: relative }   /* 擬似要素の包含ブロックにする */
+.cm-codeblock-line::before{ position: absolute; inset: 0; z-index: -3;
+                            background-color: var(--code-bg) }
+```
+
+`position: relative` は `z-index: auto` のままなので**重ね合わせコンテキストを作らない**。
+そのため `-3` は `.cm-scroller` のコンテキストで評価され、選択レイヤ（`-2`）の下に入る。
+ここで `.cm-codeblock-line` に `z-index` を足すと擬似要素がその中に閉じ込められ、
+修正が効かなくなる。
+
+**色も条件のうち。** 重なり順を直しても、下地と選択色が同じ値なら見えない。
+Nord の `--code-bg` を `--bg-hover` と別の色にしてあるのはこのため。
+
 ## ライト/ダークの切り替え
 
 `editor/theme.ts` の `EditorView.theme(spec, { dark: true })` から `dark` を外し、
