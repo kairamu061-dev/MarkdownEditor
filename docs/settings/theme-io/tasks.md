@@ -47,12 +47,12 @@
 
 ### 6. 仕上げ
 
-- [ ] `docs/settings/theme/overview.md` の「作らないもの: 配色セットのファイル入出力」を外す
-- [ ] `docs/settings/theme/spec.md` の未対応ケースからも外す
-- [ ] `docs/settings/spec.md` の機能一覧に theme-io の行を追加
-- [ ] 親（`docs/settings/`）の design.md / tasks.md にサブ項目リンクを追記
-- [ ] test-cases.md を書く
-- [ ] Windows 実機の確認チェックリストを作成
+- [x] `docs/settings/theme/overview.md` の「作らないもの: 配色セットのファイル入出力」を外す
+- [x] `docs/settings/theme/spec.md` の未対応ケースからも外す
+- [x] `docs/settings/spec.md` の機能一覧に theme-io の行を追加
+- [x] 親（`docs/settings/`）の design.md / tasks.md にサブ項目リンクを追記
+- [x] test-cases.md を書く
+- [x] Windows 実機の確認チェックリストを作成
 
 ## 依存関係
 
@@ -64,4 +64,5 @@
 
 ## ステータス
 
-進行中 — 1〜5 完了。残りは 6（仕上げ）。
+実装完了（`0f3c73e` 時点）。Windows 実機での確認待ち。
+E-20〜E-37 がユーザー確認で合格したら完了とする。
