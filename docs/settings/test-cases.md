@@ -9,7 +9,7 @@ settings は複数のサブ項目に分割されており、テストケース�
 | vault-restore | [settings/vault-restore/test-cases.md](./vault-restore/test-cases.md) | 全合格 |
 | ui | [settings/ui/test-cases.md](./ui/test-cases.md) | 全合格 |
 | theme | [settings/theme/test-cases.md](./theme/test-cases.md) | 全合格 |
-| theme-io | [settings/theme-io/test-cases.md](./theme-io/test-cases.md) | 開発機のみ確認（Windows 未確認） |
+| theme-io | [settings/theme-io/test-cases.md](./theme-io/test-cases.md) | 全合格 |
 
 ## ステータス凡例
 
