@@ -34,6 +34,20 @@ pub struct ThemeSettings {
     /// 未知のキー・不正な色を捨てる判断はフロント側に置く。
     /// BTreeMap にしているのはキー順を安定させ、保存のたびに差分を出さないため
     pub colors: BTreeMap<String, String>,
+    /// 取り込んだ利用者テーマ（登録順）。preset には "user:<name>" の形で入る
+    pub user_themes: Vec<UserTheme>,
+}
+
+/// テーマファイルから取り込んだ配色。組み込みプリセットと同じ「23 色の土台」になる。
+/// 各フィールドに default を付けているので、項目が欠けた要素があっても
+/// デシリアライズは失敗しない（欠けた分は TS 側で捨てるか補う）
+#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct UserTheme {
+    pub name: String,
+    /// エディタの基底テーマの明暗。色だけでは足りないので必ず持たせる
+    pub dark: bool,
+    pub colors: BTreeMap<String, String>,
 }
 
 /// 未存在・破損時はデフォルト値（起動をブロックしない）
@@ -129,11 +143,16 @@ mod tests {
                 font_size: Some(16),
             },
             theme: ThemeSettings {
-                preset: Some("light".into()),
+                preset: Some("user:Solarized".into()),
                 colors: BTreeMap::from([
                     ("bgPrimary".to_string(), "#101010".to_string()),
                     ("heading1".to_string(), "#ff0000".to_string()),
                 ]),
+                user_themes: vec![UserTheme {
+                    name: "Solarized".into(),
+                    dark: true,
+                    colors: BTreeMap::from([("bgPrimary".to_string(), "#002b36".to_string())]),
+                }],
             },
         };
         save(&path, &settings).unwrap();
@@ -179,6 +198,38 @@ mod tests {
         fs::remove_file(&path).unwrap();
     }
 
+    /// userThemes を持たない古い settings.json でも読める（後方互換）
+    #[test]
+    fn theme_without_user_themes_still_loads() {
+        let path = temp_file("theme-no-usertheme.json");
+        fs::write(&path, r##"{ "theme": { "preset": "light", "colors": { "text": "#ffffff" } } }"##)
+            .unwrap();
+        let settings = load(&path);
+        assert_eq!(settings.theme.preset.as_deref(), Some("light"));
+        assert!(settings.theme.user_themes.is_empty());
+        assert_eq!(settings.theme.colors.get("text").map(String::as_str), Some("#ffffff"));
+        fs::remove_file(&path).unwrap();
+    }
+
+    /// 要素のフィールドが欠けていても、その要素だけ既定で埋まって読める。
+    /// ここで失敗すると theme 全体が既定に落ちる＝利用者の配色が丸ごと消える
+    #[test]
+    fn user_theme_with_missing_fields_still_loads() {
+        let path = temp_file("theme-partial-usertheme.json");
+        fs::write(
+            &path,
+            r##"{ "theme": { "userThemes": [ { "name": "OnlyName" }, { "dark": true } ] } }"##,
+        )
+        .unwrap();
+        let settings = load(&path);
+        assert_eq!(settings.theme.user_themes.len(), 2);
+        assert_eq!(settings.theme.user_themes[0].name, "OnlyName");
+        assert!(settings.theme.user_themes[0].colors.is_empty());
+        assert_eq!(settings.theme.user_themes[1].name, "");
+        assert!(settings.theme.user_themes[1].dark);
+        fs::remove_file(&path).unwrap();
+    }
+
     /// theme を保存しても lastVault / editor を巻き込まない（部分更新）
     #[test]
     fn saving_theme_preserves_other_fields() {
@@ -195,6 +246,7 @@ mod tests {
         updated.theme = ThemeSettings {
             preset: Some("light".into()),
             colors: BTreeMap::from([("accent".to_string(), "#abcdef".to_string())]),
+            user_themes: Vec::new(),
         };
         save(&path, &updated).unwrap();
 

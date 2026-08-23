@@ -1,4 +1,5 @@
 mod settings;
+mod theme_io;
 mod vault;
 
 use std::sync::Mutex;
@@ -26,6 +27,8 @@ pub fn run() {
             settings::save_settings,
             settings::save_editor_settings,
             settings::save_theme_settings,
+            theme_io::export_theme_file,
+            theme_io::import_theme_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

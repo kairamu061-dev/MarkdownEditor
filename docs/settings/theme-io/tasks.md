@@ -6,12 +6,12 @@
 
 ### 1. データと永続化
 
-- [ ] `settings.rs` に `UserTheme`（name / dark / colors）を追加
-- [ ] `ThemeSettings` に `user_themes: Vec<UserTheme>` を追加
-- [ ] Rust テスト: 往復・欠損時の既定・項目が欠けた要素が落ちないこと・
+- [x] `settings.rs` に `UserTheme`（name / dark / colors）を追加
+- [x] `ThemeSettings` に `user_themes: Vec<UserTheme>` を追加
+- [x] Rust テスト: 往復・欠損時の既定・項目が欠けた要素が落ちないこと・
       `user_themes` の保存が他フィールドを巻き込まないこと
 - [ ] `api.ts` の `ThemeSettings` に `userThemes` を追加
-- [ ] **既存の `theme` 保存経路が壊れていないこと**（`userThemes` を持たない
+- [x] **既存の `theme` 保存経路が壊れていないこと**（`userThemes` を持たない
       古い `settings.json` を読めること）
 
 ### 2. テーマの解決（利用者テーマを土台にできるようにする）
@@ -23,9 +23,9 @@
 
 ### 3. ファイル入出力（Rust）
 
-- [ ] `theme_io.rs` を作り `export_theme_file` / `import_theme_file` を実装
-- [ ] `lib.rs` に登録し、`.json` のフィルタを付ける
-- [ ] キャンセル時に `false` / `null` を返す（エラーにしない）
+- [x] `theme_io.rs` を作り `export_theme_file` / `import_theme_file` を実装
+- [x] `lib.rs` に登録し、`.json` のフィルタを付ける
+- [x] キャンセル時に `false` / `null` を返す（エラーにしない）
 
 ### 4. テーマファイルの組み立てと検証（TS）
 
