@@ -211,3 +211,43 @@
 .settings-color-reset:hover {
   background-color: var(--bg-hover);
 }
+
+/* --- テーマの入出力（settings/theme-io） --- */
+
+.settings-theme-io {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.settings-theme-io button {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: transparent;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-theme-io button:hover {
+  background-color: var(--bg-hover);
+}
+
+.settings-theme-delete {
+  margin-left: auto;
+}
+
+.settings-theme-delete:hover {
+  color: var(--error);
+}
+
+.settings-theme-notice {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.settings-theme-notice.is-error {
+  color: var(--error);
+}

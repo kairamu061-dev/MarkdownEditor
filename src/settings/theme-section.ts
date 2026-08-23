@@ -6,16 +6,26 @@
  * スナップショット**を適用し直して戻す。
  */
 
-import type { ThemeSettings } from "./api";
+import {
+  exportThemeFile,
+  importThemeFile,
+  type ThemeSettings,
+} from "./api";
 import {
   COLOR_ITEMS,
   GROUP_LABELS,
-  PRESETS,
-  isPresetName,
   type ColorGroup,
   type ColorItem,
 } from "./palette";
-import { applyTheme, isValidColor, resolvePreset, resolvedColors } from "./theme";
+import {
+  applyTheme,
+  isValidColor,
+  resolveChoice,
+  resolvedColors,
+  themeChoices,
+  userThemeId,
+} from "./theme";
+import { buildThemeFile, parseThemeFile } from "./theme-io";
 
 /** 既定で開いておくグループ。23 項目を一度に出すとモーダルが画面の高さを超える */
 const OPEN_GROUP: ColorGroup = "basic";
@@ -33,6 +43,7 @@ export function createThemeSection(initial: ThemeSettings): ThemeSection {
   const draft: ThemeSettings = {
     preset: initial.preset,
     colors: { ...initial.colors },
+    userThemes: initial.userThemes.map((t) => ({ ...t, colors: { ...t.colors } })),
   };
 
   const section = document.createElement("div");
@@ -46,27 +57,66 @@ export function createThemeSection(initial: ThemeSettings): ThemeSection {
   presetField.className = "settings-field";
   presetField.textContent = "配色プリセット";
   const presetSelect = document.createElement("select");
-  for (const preset of Object.values(PRESETS)) {
-    const option = document.createElement("option");
-    option.value = preset.name;
-    option.textContent = preset.label;
-    presetSelect.appendChild(option);
-  }
-  presetSelect.value = resolvePreset(draft);
   presetField.appendChild(presetSelect);
+
+  const ioButtons = document.createElement("div");
+  ioButtons.className = "settings-theme-io";
+  const exportButton = document.createElement("button");
+  exportButton.type = "button";
+  exportButton.textContent = "エクスポート";
+  const importButton = document.createElement("button");
+  importButton.type = "button";
+  importButton.textContent = "インポート";
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "settings-theme-delete";
+  deleteButton.textContent = "このテーマを削除";
+  ioButtons.append(exportButton, importButton, deleteButton);
+
+  /** 取り込み結果の通知・エラーを出す欄（設定モーダル本体のエラー欄とは別） */
+  const notice = document.createElement("div");
+  notice.className = "settings-theme-notice";
+  notice.hidden = true;
 
   const resetAll = document.createElement("button");
   resetAll.type = "button";
   resetAll.className = "settings-theme-reset-all";
   resetAll.textContent = "すべて初期値に戻す";
 
-  section.append(heading, presetField, resetAll);
+  section.append(heading, presetField, ioButtons, notice, resetAll);
+
+  const showNotice = (message: string, isError: boolean) => {
+    notice.textContent = message;
+    notice.classList.toggle("is-error", isError);
+    notice.hidden = false;
+  };
+  const clearNotice = () => {
+    notice.hidden = true;
+    notice.textContent = "";
+  };
+
+  /** 選択欄を作り直す。利用者テーマの増減で並びが変わるため */
+  const refreshChoices = () => {
+    const choice = resolveChoice(draft);
+    const selected = choice.kind === "user" ? userThemeId(choice.name) : choice.name;
+    presetSelect.textContent = "";
+    for (const entry of themeChoices(draft)) {
+      const option = document.createElement("option");
+      option.value = entry.id;
+      option.textContent = entry.label;
+      presetSelect.appendChild(option);
+    }
+    presetSelect.value = selected;
+    // 組み込みプリセットは消せない
+    deleteButton.hidden = choice.kind !== "user";
+  };
 
   // 項目 1 行ぶんの再描画に使う（値・上書き印・戻すボタンの表示）
   const refreshers: Array<() => void> = [];
 
   const preview = () => {
     applyTheme(draft);
+    refreshChoices();
     for (const refresh of refreshers) refresh();
   };
 
@@ -90,12 +140,11 @@ export function createThemeSection(initial: ThemeSettings): ThemeSection {
   }
 
   presetSelect.addEventListener("change", () => {
-    const next = presetSelect.value;
-    if (!isPresetName(next)) return;
-    draft.preset = next;
+    draft.preset = presetSelect.value;
     // 上書きは全部捨てる。残すと配色が混ざって読めない画面になりうる
     // （そこから「すべて初期値に戻す」に辿り着けなくなる。spec.md 参照）
     draft.colors = {};
+    clearNotice();
     preview();
   });
 
@@ -104,9 +153,66 @@ export function createThemeSection(initial: ThemeSettings): ThemeSection {
     preview();
   });
 
+  exportButton.addEventListener("click", () => {
+    // 見えているとおりの色を書き出す（保存前のプレビュー状態を含む）
+    const choice = resolveChoice(draft);
+    const json = buildThemeFile(choice.label, choice.dark, resolvedColors(draft));
+    void exportThemeFile(json, choice.label)
+      .then((saved) => {
+        if (saved) showNotice("テーマを書き出しました", false);
+      })
+      .catch((e) => {
+        console.error("export_theme_file failed:", e);
+        showNotice("テーマの書き出しに失敗しました", true);
+      });
+  });
+
+  importButton.addEventListener("click", () => {
+    void importThemeFile()
+      .then((text) => {
+        if (text === null) return; // キャンセル
+        const result = parseThemeFile(text, draft.userThemes.map((t) => t.name));
+        if (!result.ok) {
+          showNotice(result.message, true);
+          return;
+        }
+        draft.userThemes = [...draft.userThemes, result.theme];
+        draft.preset = userThemeId(result.theme.name);
+        draft.colors = {};
+        showNotice(
+          result.filled > 0
+            ? `「${result.theme.name}」を取り込みました（${result.filled} 項目を既定値で補いました）`
+            : `「${result.theme.name}」を取り込みました`,
+          false,
+        );
+        preview();
+      })
+      .catch((e) => {
+        console.error("import_theme_file failed:", e);
+        showNotice("ファイルを読み込めませんでした", true);
+      });
+  });
+
+  deleteButton.addEventListener("click", () => {
+    const choice = resolveChoice(draft);
+    if (choice.kind !== "user") return;
+    draft.userThemes = draft.userThemes.filter((t) => t.name !== choice.name);
+    // 消したテーマを指したままにしない
+    draft.preset = null;
+    draft.colors = {};
+    showNotice(`「${choice.name}」を削除しました`, false);
+    preview();
+  });
+
+  refreshChoices();
+
   return {
     element: section,
-    draft: () => ({ preset: draft.preset, colors: { ...draft.colors } }),
+    draft: () => ({
+      preset: draft.preset,
+      colors: { ...draft.colors },
+      userThemes: draft.userThemes.map((t) => ({ ...t, colors: { ...t.colors } })),
+    }),
   };
 }
 
