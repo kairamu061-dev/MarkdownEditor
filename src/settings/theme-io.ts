@@ -87,7 +87,9 @@ export function parseThemeFile(text: string, existingNames: readonly string[]): 
     if (typeof value !== "string" || !isValidColor(value)) {
       return {
         ok: false,
-        message: `テーマファイルの形式が正しくありません（${key}: ${String(value)}）`,
+        // 形式そのものは正しく、色の値だけが不正。設定画面の 16 進入力欄の
+        // メッセージ（「色の指定が正しくありません」）と言い回しを揃える
+        message: `テーマファイルの色の指定が正しくありません（${key}: ${String(value)}）`,
       };
     }
     colors[key] = value.trim().toLowerCase();

@@ -154,6 +154,9 @@ export function createThemeSection(initial: ThemeSettings): ThemeSection {
   });
 
   exportButton.addEventListener("click", () => {
+    // 前の通知を消してから始める。消さないと、キャンセルしたときに
+    // 直前の「書き出しました」が残って成功したように見える
+    clearNotice();
     // 見えているとおりの色を書き出す（保存前のプレビュー状態を含む）
     const choice = resolveChoice(draft);
     const json = buildThemeFile(choice.label, choice.dark, resolvedColors(draft));
@@ -168,10 +171,15 @@ export function createThemeSection(initial: ThemeSettings): ThemeSection {
   });
 
   importButton.addEventListener("click", () => {
+    clearNotice();
     void importThemeFile()
       .then((text) => {
         if (text === null) return; // キャンセル
-        const result = parseThemeFile(text, draft.userThemes.map((t) => t.name));
+        // 突き合わせ先は「今ドロップダウンに並んでいるラベル全部」。
+        // 利用者テーマ同士だけを見ていると、Nord を書き出して取り込んだときに
+        // 組み込みと同じラベルが 2 つ並ぶ
+        const existing = themeChoices(draft).map((c) => c.label);
+        const result = parseThemeFile(text, existing);
         if (!result.ok) {
           showNotice(result.message, true);
           return;
