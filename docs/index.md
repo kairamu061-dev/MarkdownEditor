@@ -25,3 +25,4 @@
   - [vault-restore](./settings/vault-restore/overview.md)
   - [ui](./settings/ui/overview.md)
   - [theme](./settings/theme/overview.md)
+  - [theme-io](./settings/theme-io/overview.md)
