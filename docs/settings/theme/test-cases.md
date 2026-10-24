@@ -50,7 +50,7 @@ Rust 側（`src-tauri/src/settings.rs`・`cargo test --lib settings`）:
 
 ## 検証記録
 
-**2026-08-22 の Windows 検証（`c497ff7` 相当のビルド）で E-01〜E-18 を全項目合格とした。**
+**2026-08-22 の Windows 検証（`d28f344` 相当のビルド）で E-01〜E-18 を全項目合格とした。**
 実施したのは**ユーザー本人ではなく Windows 側の自動化セッション**で、実機
 （Windows 11 / WebView2）を `scripts\verify-build.bat` で再ビルドして起動し、
 UI Automation・スクリーンショットの目視・`settings.json` のバイト照合で確認している
