@@ -14,8 +14,23 @@
 src/editor/
 ├── index.ts        # 公開 API（mountEditor）。EditorView の生成・保持
 ├── theme.ts        # Nord テーマ（EditorView.theme + HighlightStyle）
-└── scratch.ts      # スクラッチ文書の初期内容（定数）
+├── scratch.ts      # スクラッチ文書の初期内容（定数）
+└── setext.ts       # パーサ拡張: `-` 1 文字の下線見出しを無効にする（BUG-035）
 ```
+
+### `-` 1 文字の下線見出しを無効にする（setext.ts）
+
+`markdown({ extensions: [noSingleDashSetext] })` で Lezer のパーサに渡す `MarkdownConfig`。
+
+- `parseBlock` に `after: "SetextHeading"` のリーフパーサを 1 つ足す。このファクトリは自分の
+  パーサを返さず、直前に生成された SetextHeading のインスタンス（`leaf.parsers` の末尾）を
+  ラッパーに差し替える。ラッパーは行が `-` 1 文字（＋空白）なら `false` を返し、
+  その行は段落の続きとして取り込まれる。それ以外は本体へ委譲する
+- SetextHeading そのものを `remove` / 同名で置き換えない。Lezer の水平線判定は
+  「既定の SetextHeading が有効か」を見て段落直下の `---` を見出しに譲っているので、
+  置き換えると `文章` + `---` が水平線に変わってしまう
+- 「末尾がそのインスタンス」は Lezer の内部順序に依存する。ライブラリ更新時は
+  test-cases の E-09 で確認する
 
 - `index.ts` は CodeMirror の `Extension` 配列を組み立てる。追加拡張（live-preview 等）は
   `mountEditor` の引数 `extraExtensions` で外から注入する（core のコード変更なしで拡張可能）

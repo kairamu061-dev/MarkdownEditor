@@ -18,6 +18,7 @@ import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
 import { nordTheme, nordHighlightStyle, darkCompartment, darkTheme } from "./theme";
 import { SCRATCH_DOC } from "./scratch";
+import { noSingleDashSetext } from "./setext";
 
 export interface MountOptions {
   initialDoc?: string;
@@ -50,7 +51,11 @@ export function mountEditor(
     dropCursor(),
     indentOnInput(),
     EditorView.lineWrapping,
-    markdown({ base: markdownLanguage, codeLanguages: languages }),
+    markdown({
+      base: markdownLanguage,
+      codeLanguages: languages,
+      extensions: [noSingleDashSetext],
+    }),
     syntaxHighlighting(nordHighlightStyle),
     nordTheme,
     // redo を Ctrl+Y と Ctrl+Shift+Z の両方へ明示バインド（BUG-006）。

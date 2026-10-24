@@ -49,3 +49,4 @@
 | [BUG-032](./tickets/BUG-032.md) | 番号付きリストで番号と本文のあいだに余分な隙間が空く | editor/live-preview | Closed |
 | [BUG-033](./tickets/BUG-033.md) | コードブロックの中でテキストを選択しても反転して見えない | editor/code-highlight | Closed |
 | [BUG-034](./tickets/BUG-034.md) | 本文の先頭で Enter すると上の項目が `-` だけになり箇条書きが解除される | editor/live-preview | Fixed |
+| [BUG-035](./tickets/BUG-035.md) | 文章の下の行に `-` を入れると上の文章が見出し 2 になる | editor/core | Open |
