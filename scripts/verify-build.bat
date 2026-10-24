@@ -54,6 +54,19 @@ if not exist "node_modules\.bin\tauri.cmd" (
   )
 )
 
+rem exe にビルド機のユーザーフォルダ（例: C:\Users\<名前>\.cargo\registry\...）を残さない。
+rem Rust は依存クレートのソースの場所をパニック時の表示用に埋め込むため、そのままだと
+rem 配布するインストーラにユーザー名が入る。ビルド時にその部分を ~ へ置き換える。
+rem RUSTFLAGS は空白で区切られるので、空白を含むパスでは置き換えを諦めて警告だけ出す。
+if not "%USERPROFILE: =%"=="%USERPROFILE%" (
+  echo [注意] ユーザーフォルダのパスに空白があるため、exe からのパス除去を行いません: %USERPROFILE%
+) else (
+  set "RUSTFLAGS=%RUSTFLAGS% --remap-path-prefix=%USERPROFILE%=~"
+)
+if defined CARGO_HOME if "%CARGO_HOME: =%"=="%CARGO_HOME%" (
+  set "RUSTFLAGS=%RUSTFLAGS% --remap-path-prefix=%CARGO_HOME%=cargo-home"
+)
+
 echo.
 echo ※最後の「Building ... markdown-editor」は LTO 最適化のため数分〜十数分
 echo   止まって見えますが正常です。rustc が CPU を使っていればそのまま待ってください。
@@ -76,6 +89,12 @@ if not exist "%EXE%" set "EXE=src-tauri\target\release\markdown-editor.exe"
 if not exist "%EXE%" (
   echo [NG] ビルド後の exe が見つかりません: src-tauri\target\release\
   exit /b 1
+)
+
+rem 置き換えが効いたかを確かめる（ユーザーフォルダのパスが exe に残っていないか）
+findstr /l /m /c:"%USERPROFILE%" "%EXE%" >nul 2>nul && (
+  echo [注意] exe にユーザーフォルダのパスが残っています: %USERPROFILE%
+  echo        配布する場合は RUSTFLAGS の --remap-path-prefix を確認してください。
 )
 
 echo.
