@@ -15,6 +15,7 @@ import {
   type Line,
   Prec,
   type Range,
+  type Transaction,
 } from "@codemirror/state";
 import { indentLess, indentMore, insertNewline } from "@codemirror/commands";
 import { insertNewlineContinueMarkupCommand } from "@codemirror/lang-markdown";
@@ -570,8 +571,44 @@ const clearEmptyListItem: Command = (view) => {
   return true;
 };
 
+/**
+ * 項目の本文の先頭（`- |aaa`）で Enter を押したとき、上に残る項目のマーク直後の
+ * 空白を消さない（BUG-034）。
+ *
+ * lang-markdown は改行位置の手前の空白を削るので、`- aaa` が `-` + `- aaa` になる。
+ * 空白の無い `-` はカーソルが乗るとマークに触れてソース表示に戻り、続けて空白を
+ * 打つと IME では全角空白（`-　`）が入ってリストでなくなる。
+ *
+ * 改行そのものは markupEnter に任せ（番号の振り直しも含む）、削られた空白だけを戻す。
+ */
+const contentStartEnter: Command = (view) => {
+  const { state } = view;
+  if (state.selection.ranges.length !== 1) return false;
+  const range = state.selection.main;
+  if (!range.empty) return false;
+  const line = state.doc.lineAt(range.head);
+  const col = range.head - line.from;
+  if (!/\S/.test(line.text.slice(col))) return false; // 本文が空なら通常処理へ
+  const m = /^(?:[ \t]*>[ \t]?)*[ \t]*(?:[-*+]|\d+[.)])([ \t]+)$/.exec(line.text.slice(0, col));
+  if (!m) return false;
+  // `as` で初期化しないと、TS がコールバック内の代入を見ずに null へ絞り込む
+  let tr = null as Transaction | null;
+  if (!markupEnter({ state, dispatch: (t) => (tr = t) }) || !tr) return false;
+  const { changes, selection } = tr;
+  const space = m[1];
+  view.dispatch(
+    { changes, selection, scrollIntoView: true, userEvent: "input" },
+    // 削られた範囲は [head - 空白の長さ, head)。改行はその先頭に入るので、同じ位置へ戻す
+    { changes: { from: range.head - space.length, insert: space }, sequential: true },
+  );
+  return true;
+};
+
 const listAwareEnter: Command = (view) =>
-  quoteAwareEnter(view) || lazyListEnter(view) || markupEnter(view);
+  quoteAwareEnter(view) ||
+  lazyListEnter(view) ||
+  contentStartEnter(view) ||
+  markupEnter(view);
 
 // --- 番号付きリストの採番 ---------------------------------------------------
 // Tab / Shift+Tab で段を変えても番号が振り直されない、という報告への対応。

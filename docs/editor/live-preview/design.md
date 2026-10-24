@@ -179,7 +179,7 @@ mountEditor(el, {
 ## Enter キーの扱い
 
 Enter は `Prec.highest` の 1 バインドにまとめ、次の順で試す。
-どちらも `false` を返したら既定のキーマップへ渡る。
+すべて `false` を返したら既定のキーマップへ渡る。
 
 1. `quoteAwareEnter` — 行頭が `>` でない遅延継続行では plain な改行にする（BUG-011）
 2. `lazyListEnter` — **リスト**の遅延継続行のうち、本文が項目の開始桁より左で終わって
@@ -187,7 +187,11 @@ Enter は `Prec.highest` の 1 バインドにまとめ、次の順で試す。
    `行のテキスト.slice(マークの桁)` で行うため、`- aaaa` の次行に `a` とだけ書くと
    `"a".slice(2)` が空になり、中身があるのに空項目と誤判定されて行の内容が消える。
    桁より右に本文がある通常の継続行は誤判定しないので、そちらは委譲する
-3. `insertNewlineContinueMarkupCommand({ nonTightLists: false })` — 空の箇条書き項目で
+3. `contentStartEnter` — 項目の本文の先頭（`- |aaa`）で Enter を押したとき、4. と同じ
+   改行をしたうえで、上に残る項目のマーク直後の空白を戻す（BUG-034）。lang-markdown は
+   改行位置の手前の空白を削るので、そのままでは `-` だけの行が残る。改行・番号の振り直しは
+   4. の結果をそのまま使い、空白 1 か所の挿入だけを同じトランザクションに足す
+4. `insertNewlineContinueMarkupCommand({ nonTightLists: false })` — 空の箇条書き項目で
    Enter を押したとき、マークを消さず「上に空行を挿入して loose 化する」lang-markdown の
    既定分岐を止める（BUG-025）。この分岐は**タイトな 2 項目リストの 2 番目**でだけ起きる
 
