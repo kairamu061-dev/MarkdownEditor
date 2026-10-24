@@ -85,8 +85,13 @@ export function initMarquee(container: HTMLElement): void {
     if (e.button !== 0) return;
     const target = e.target instanceof Element ? e.target : null;
     if (!target?.closest(".tree")) return;
-    // 名前・開閉マークの上は従来どおり（クリック = 開く / 開閉、ドラッグ = 移動）
-    if (target.closest(".tree-label, .tree-chevron")) return;
+    // 名前・開閉マークの上は従来どおり（クリック = 開く / 開閉、ドラッグ = 移動）。
+    // リネーム・新規作成の入力欄（file-ops が行の中身と差し替える）も、カーソル操作を妨げない
+    if (target.closest(".tree-label, .tree-chevron, input, textarea, [contenteditable]")) return;
+    // 下の preventDefault でフォーカスが動かなくなる。入力欄の blur で確定する file-ops の
+    // リネームが、空白のクリックで確定しなくなるので、ここで明示的に外す
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement && container.contains(focused)) focused.blur();
     // 行は draggable なので、止めないと行の空白からネイティブ DnD が始まる。
     // 文字列の選択も止まる。click はこの影響を受けない
     e.preventDefault();

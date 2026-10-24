@@ -34,6 +34,8 @@ interface ExplorerState {
   currentPath: string | null;   // 開いているノートの保管庫相対パス
   saveTimer: number | null;     // デバウンスタイマー ID
   pendingContent: string | null; // 未保存の最新内容
+  collapsedDirs: Set<string>;   // 折りたたまれているフォルダ（BUG-002）
+  dragPaths: string[];          // ドラッグ中の項目。選択中のノートを掴めば選択全体（multi-select）。空 = ドラッグしていない
 }
 ```
 
@@ -43,7 +45,14 @@ interface ExplorerState {
 // src/explorer/index.ts
 export function initExplorer(container: HTMLElement, editor: EditorHandle): void;
 // 内部: openVault / renderTree / openNote / scheduleSave / saveNow / showStatus
+// DnD 移動（内部）:
+//   movableTo(toDir): string[]   dragPaths のうち toDir へ実際に移すもの。自身・子孫を含めば []、既に toDir にあるものは除外
+//   canDrop(toDir): boolean      movableTo(toDir) が 1 件以上
+//   doMove(paths, toDir)         開いているノートを含めば先に保存を確定 → move_path を順に → 1 回だけ refreshTree
 ```
+
+ドラッグを始められるのは行の**名前・開閉マークの上**だけ。行のそれ以外の場所からのドラッグは
+範囲選択になる（[multi-select](../multi-select/design.md)）。
 
 `state.currentPath` への代入は内部関数 `setCurrentPathInternal` に集約し、そこで購読者へ通知する
 （`openNote` / `remapPrefix` / `applyVault` / `setCurrentPath` の 4 箇所から呼ぶ）。
