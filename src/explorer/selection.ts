@@ -49,7 +49,10 @@ function paint(): void {
 const DRAG_THRESHOLD = 4;
 /** ポインタがこの距離（px）まで上下端に寄ったら自動スクロールする */
 const EDGE = 24;
-const SCROLL_STEP = 8;
+/** 自動スクロールの速さ（px/秒）。フレームあたりの量で決めるとリフレッシュレートで速さが変わる */
+const SCROLL_SPEED = 480;
+/** 1 フレームの経過時間の上限（ms）。タブが裏に回って rAF が止まった後の大跳びを防ぐ */
+const MAX_FRAME_MS = 50;
 
 interface Point {
   x: number;
@@ -103,6 +106,10 @@ export function initMarquee(container: HTMLElement): void {
     let last = startClient;
     let box: HTMLDivElement | null = null;
     let scrollTimer: number | null = null;
+    let lastFrame: number | null = null;
+    // 1 フレームの量は高リフレッシュレートだと 1px 台になる。scrollTop は整数ピクセルに
+    // 丸められうるので、端数を持ち越して整数ぶんだけ動かす
+    let carry = 0;
 
     const update = (): void => {
       if (!box) return;
@@ -129,16 +136,28 @@ export function initMarquee(container: HTMLElement): void {
     };
 
     // ポインタが上下端にある間、止まっていてもスクロールし続ける
-    const autoScroll = (): void => {
+    const autoScroll = (now: number): void => {
       scrollTimer = null;
       const rect = container.getBoundingClientRect();
-      let dy = 0;
-      if (last.y < rect.top + EDGE) dy = -SCROLL_STEP;
-      else if (last.y > rect.bottom - EDGE) dy = SCROLL_STEP;
-      if (dy === 0) return;
-      const before = container.scrollTop;
-      container.scrollTop += dy;
-      if (container.scrollTop !== before) update();
+      let dir = 0;
+      if (last.y < rect.top + EDGE) dir = -1;
+      else if (last.y > rect.bottom - EDGE) dir = 1;
+      if (dir === 0) {
+        lastFrame = null;
+        carry = 0;
+        return;
+      }
+      // 端に入った最初のフレームは時刻を取るだけ。以後は経過時間ぶん進める
+      if (lastFrame !== null) {
+        const dt = Math.min(now - lastFrame, MAX_FRAME_MS);
+        carry += (dir * SCROLL_SPEED * dt) / 1000;
+        const step = Math.trunc(carry);
+        carry -= step;
+        const before = container.scrollTop;
+        if (step !== 0) container.scrollTop = before + step;
+        if (container.scrollTop !== before) update();
+      }
+      lastFrame = now;
       scrollTimer = requestAnimationFrame(autoScroll);
     };
 
