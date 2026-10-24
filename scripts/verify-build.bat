@@ -58,14 +58,22 @@ rem exe にビルド機のユーザーフォルダ（例: C:\Users\<名前>\.car
 rem Rust は依存クレートのソースの場所をパニック時の表示用に埋め込むため、そのままだと
 rem 配布するインストーラにユーザー名が入る。ビルド時にその部分を ~ へ置き換える。
 rem RUSTFLAGS は空白で区切られるので、空白を含むパスでは置き換えを諦めて警告だけ出す。
-if not "%USERPROFILE: =%"=="%USERPROFILE%" (
-  echo [注意] ユーザーフォルダのパスに空白があるため、exe からのパス除去を行いません: %USERPROFILE%
-) else (
-  set "RUSTFLAGS=%RUSTFLAGS% --remap-path-prefix=%USERPROFILE%=~"
-)
-if defined CARGO_HOME if "%CARGO_HOME: =%"=="%CARGO_HOME%" (
-  set "RUSTFLAGS=%RUSTFLAGS% --remap-path-prefix=%CARGO_HOME%=cargo-home"
-)
+rem
+rem 括弧のブロックや if の入れ子にはしないこと。cmd は if を評価する前に行（ブロック全体）の
+rem %%...%% を展開するので、未定義の変数の %%VAR: =%% は空にならず構文が壊れる（BUG-037。
+rem CARGO_HOME 未定義で「( was unexpected at this time.」）。パスに ) を含む場合も
+rem ブロックが途中で閉じる。goto で 1 行ずつ判定する。
+if not "%USERPROFILE: =%"=="%USERPROFILE%" goto :profile_has_space
+set "RUSTFLAGS=%RUSTFLAGS% --remap-path-prefix=%USERPROFILE%=~"
+goto :profile_done
+:profile_has_space
+echo [注意] ユーザーフォルダのパスに空白があるため、exe からのパス除去を行いません: %USERPROFILE%
+:profile_done
+rem CARGO_HOME が未定義なら次の行は読まれない（未定義のまま %%CARGO_HOME: =%% を展開させない）
+if not defined CARGO_HOME goto :cargo_home_done
+if not "%CARGO_HOME: =%"=="%CARGO_HOME%" goto :cargo_home_done
+set "RUSTFLAGS=%RUSTFLAGS% --remap-path-prefix=%CARGO_HOME%=cargo-home"
+:cargo_home_done
 
 echo.
 echo ※最後の「Building ... markdown-editor」は LTO 最適化のため数分〜十数分
@@ -92,10 +100,10 @@ if not exist "%EXE%" (
 )
 
 rem 置き換えが効いたかを確かめる（ユーザーフォルダのパスが exe に残っていないか）
-findstr /l /m /c:"%USERPROFILE%" "%EXE%" >nul 2>nul && (
-  echo [注意] exe にユーザーフォルダのパスが残っています: %USERPROFILE%
-  echo        配布する場合は RUSTFLAGS の --remap-path-prefix を確認してください。
-)
+findstr /l /m /c:"%USERPROFILE%" "%EXE%" >nul 2>nul || goto :path_check_done
+echo [注意] exe にユーザーフォルダのパスが残っています: %USERPROFILE%
+echo        配布する場合は RUSTFLAGS の --remap-path-prefix を確認してください。
+:path_check_done
 
 echo.
 echo [OK] ビルド完了: %EXE%
