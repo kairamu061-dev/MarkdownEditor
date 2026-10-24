@@ -10,7 +10,7 @@
 - [x] T4: index.ts — `dragPaths` 化、`movableTo`、まとめて移動と件数つきステータス、ドラッグ画像
 - [x] T5: explorer.css — `.selected`・四角のスタイル
 - [x] T6: headless で検証（範囲選択・クリック抑止・まとめて移動）し、test-cases.md を埋める
-- [ ] T7: Windows 動作確認チェックリストを書く
+- [x] T7: Windows 動作確認チェックリストを書く
 
 ## 依存関係
 
