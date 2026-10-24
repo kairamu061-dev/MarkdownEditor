@@ -82,6 +82,13 @@ function startRename(path: string, isDir: boolean, row: HTMLElement): void {
   input.className = "rename-input";
   input.value = baseName;
   row.replaceChildren(input);
+  // 入力欄の click が行まで伝わると、ノート行は openNote（入力欄が消えてフォーカスが
+  // エディタへ移り、名前のつもりの文字が本文に入って保存される）、フォルダ行は開閉が走る（BUG-036）
+  input.addEventListener("click", (e) => e.stopPropagation());
+  input.addEventListener("dblclick", (e) => e.stopPropagation());
+  // 行は draggable。入力欄の文字をドラッグで選ぶ操作が行の移動として始まらないようにする。
+  // 確定・取消のどちらでもツリーは描き直されるので、戻す必要はない
+  row.draggable = false;
   input.focus();
   input.select();
 
