@@ -58,7 +58,8 @@ container に届かず、フラグが残ると次の本物のクリックを食�
    2 件以上なら「N 件のノート」と書いた要素を `setDragImage` に渡す
 2. canDrop(toDir): `movableTo(toDir)` が 1 件以上なら可。自身・子孫が含まれていれば不可（フォルダ単体の移動のため）。
    すでに toDir にあるものは除外する
-3. drop: `flushPendingSave()` で保存待ちを確定 → `movePath` を 1 件ずつ順に → 成功したものごとに
+3. drop: 開いているノートが移動対象（またはその配下）なら `flushSave()` で保存待ちを確定し、
+   それでも未保存分が残れば移動しない（`renameCurrentNote` と同じ扱い）→ `movePath` を 1 件ずつ順に → 成功したものごとに
    `remapPaths` → 最後に 1 回だけ `refreshTree` → 失敗件数をステータスへ
 
 ## データ構造

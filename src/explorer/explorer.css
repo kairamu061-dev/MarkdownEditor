@@ -107,6 +107,40 @@
   border-radius: 4px;
 }
 
+/* --- 複数選択（multi-select） ---
+   選択色はテーマ変数を足さず --accent から作る（theme-io の書き出し項目を増やさない）。
+   開いているノートの .active（--bg-hover）とは別の色にして、両方が同じ行に乗っても見分けられる */
+.tree-row.selected,
+.tree-row.selected:hover {
+  background-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.tree-row.selected.active {
+  background-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* 範囲選択の四角。#sidebar-content（スクロールする要素）の中で絶対配置する */
+.tree-marquee {
+  position: absolute;
+  z-index: 1;
+  border: 1px solid var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+  pointer-events: none;
+}
+
+/* 複数件をドラッグするときの画像（setDragImage 用に一瞬だけ画面外へ置く） */
+.tree-drag-badge {
+  position: fixed;
+  top: -100px;
+  left: 0;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background-color: var(--accent);
+  color: var(--bg-primary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 /* --- 保管庫スイッチャ（Obsidian 風。サイドバー下部フッタに配置） --- */
 .vault-switcher-button {
   display: flex;

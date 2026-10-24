@@ -15,6 +15,15 @@ import {
   type VaultInfo,
 } from "./api";
 import { initFileOps } from "./file-ops";
+import {
+  clearSelection,
+  initMarquee,
+  isSelected,
+  remapSelection,
+  retainSelection,
+  selectedPaths,
+  toggleSelected,
+} from "./selection";
 
 const SAVE_DEBOUNCE_MS = 700;
 
@@ -25,8 +34,8 @@ interface ExplorerState {
   pendingContent: string | null;
   /** 折りたたまれているフォルダの相対パス。再描画をまたいで開閉状態を保持する（BUG-002） */
   collapsedDirs: Set<string>;
-  /** ドラッグ中のノート/フォルダの相対パス（DnD 移動用） */
-  dragPath: string | null;
+  /** ドラッグ中のノート/フォルダの相対パス（DnD 移動用）。選択中のノートを掴めば選択全体。空 = ドラッグしていない */
+  dragPaths: string[];
 }
 
 const state: ExplorerState = {
@@ -35,7 +44,7 @@ const state: ExplorerState = {
   saveTimer: null,
   pendingContent: null,
   collapsedDirs: new Set(),
-  dragPath: null,
+  dragPaths: [],
 };
 
 let container: HTMLElement;
@@ -253,25 +262,41 @@ function basename(path: string): string {
   return path.split(/[\\/]/).filter(Boolean).pop() ?? path;
 }
 
-/** ドラッグ中の項目を toDir（"" はルート）へドロップ可能か */
+/** ドラッグ中の項目のうち、toDir（"" はルート）へ実際に移すもの。空ならドロップ不可 */
+function movableTo(toDir: string): string[] {
+  const paths = state.dragPaths;
+  // 自身・子孫へは不可（フォルダの移動）。1 件でも当たればドロップごと受け付けない
+  if (paths.some((from) => toDir === from || toDir.startsWith(`${from}/`))) return [];
+  return paths.filter((from) => toDir !== parentDir(from)); // 既に同じ場所のものは飛ばす
+}
+
 function canDrop(toDir: string): boolean {
-  const from = state.dragPath;
-  if (from === null) return false;
-  if (toDir === from || toDir.startsWith(`${from}/`)) return false; // 自身・子孫は不可
-  if (toDir === parentDir(from)) return false; // 既に同じ場所
-  return true;
+  return movableTo(toDir).length > 0;
+}
+
+/** 複数件を運ぶときのドラッグ画像（「N 件のノート」） */
+function setGroupDragImage(e: DragEvent, count: number): void {
+  if (!e.dataTransfer) return;
+  const badge = document.createElement("div");
+  badge.className = "tree-drag-badge";
+  badge.textContent = `${count} 件のノート`;
+  document.body.appendChild(badge);
+  e.dataTransfer.setDragImage(badge, 0, 0);
+  // setDragImage はこの時点の描画を写し取るので、すぐ外してよい
+  setTimeout(() => badge.remove(), 0);
 }
 
 function makeDraggable(row: HTMLElement, path: string): void {
   row.draggable = true;
   row.addEventListener("dragstart", (e) => {
-    state.dragPath = path;
-    e.dataTransfer?.setData("text/plain", path);
+    state.dragPaths = isSelected(path) ? selectedPaths() : [path];
+    e.dataTransfer?.setData("text/plain", state.dragPaths.join("\n"));
     if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+    if (state.dragPaths.length > 1) setGroupDragImage(e, state.dragPaths.length);
     e.stopPropagation();
   });
   row.addEventListener("dragend", () => {
-    state.dragPath = null;
+    state.dragPaths = [];
   });
 }
 
@@ -292,8 +317,7 @@ function makeDropTarget(row: HTMLElement, toDir: string): void {
     if (!canDrop(toDir)) return;
     e.preventDefault();
     e.stopPropagation();
-    const from = state.dragPath;
-    if (from !== null) void doMove(from, toDir);
+    void doMove(movableTo(toDir), toDir);
   });
 }
 
@@ -315,21 +339,45 @@ function remapPrefix(from: string, to: string): void {
   const remap = (p: string): string =>
     p === from ? to : p.startsWith(`${from}/`) ? to + p.slice(from.length) : p;
   state.collapsedDirs = new Set([...state.collapsedDirs].map(remap));
+  remapSelection(remap);
   if (state.currentPath !== null) setCurrentPathInternal(remap(state.currentPath));
 }
 
-async function doMove(from: string, toDir: string): Promise<void> {
-  try {
-    await movePath(from, toDir);
-    remapPaths(from, toDir);
-    await refreshTree();
-  } catch (e) {
-    if (String(e).includes("already exists")) {
-      showStatus("移動先に同名の項目があります");
-    } else {
-      console.error("move_path failed:", e);
-      showStatus("移動に失敗しました");
+/** paths を toDir へ順に移す。失敗したものは飛ばして残りを続け、最後に件数を出す */
+async function doMove(paths: string[], toDir: string): Promise<void> {
+  if (paths.length === 0) return;
+  // 開いているノートを移すなら、保存待ちを先に確定する。移動中に debounce が満了すると
+  // 旧パスへ書き込まれる（renameCurrentNote と同じ理由）
+  const current = state.currentPath;
+  if (current !== null && paths.some((p) => current === p || current.startsWith(`${p}/`))) {
+    await flushSave();
+    if (state.pendingContent !== null) {
+      showStatus("保存できていないため移動できません");
+      return;
     }
+  }
+  let conflicts = 0;
+  let failures = 0;
+  for (const from of paths) {
+    try {
+      await movePath(from, toDir);
+      remapPaths(from, toDir);
+    } catch (e) {
+      if (String(e).includes("already exists")) conflicts++;
+      else {
+        console.error("move_path failed:", e);
+        failures++;
+      }
+    }
+  }
+  await refreshTree();
+  if (paths.length === 1) {
+    if (conflicts) showStatus("移動先に同名の項目があります");
+    else if (failures) showStatus("移動に失敗しました");
+  } else if (failures) {
+    showStatus(`${conflicts + failures} 件の移動に失敗しました`);
+  } else if (conflicts) {
+    showStatus(`同名の項目があるため ${conflicts} 件は移動しませんでした`);
   }
 }
 
@@ -376,12 +424,29 @@ function renderNodes(nodes: TreeNode[]): HTMLUListElement {
       chevron.textContent = ""; // ノートは開閉マークなし（位置合わせ用スペーサ）
       label.textContent = node.name.replace(/\.md$/i, "");
       if (node.path === state.currentPath) row.classList.add("active");
-      row.addEventListener("click", () => void openNote(node.path));
+      if (isSelected(node.path)) row.classList.add("selected");
+      row.addEventListener("click", (e) => {
+        if (e.ctrlKey) {
+          toggleSelected(node.path);
+          return;
+        }
+        clearSelection();
+        void openNote(node.path);
+      });
       li.appendChild(row);
     }
     ul.appendChild(li);
   }
   return ul;
+}
+
+/** ツリー内のノートのパス（削除などで消えたものを選択から外すため） */
+function notePaths(nodes: TreeNode[], out = new Set<string>()): Set<string> {
+  for (const node of nodes) {
+    if (node.isDir) notePaths(node.children, out);
+    else out.add(node.path);
+  }
+  return out;
 }
 
 function renderTree(): void {
@@ -408,8 +473,7 @@ function renderTree(): void {
       treeEl.classList.remove("drop-target");
       if (e.target !== treeEl || !canDrop("")) return;
       e.preventDefault();
-      const from = state.dragPath;
-      if (from !== null) void doMove(from, "");
+      void doMove(movableTo(""), "");
     });
     treeEl.addEventListener("contextmenu", (e) => {
       if (e.target === treeEl) contextMenuHandler?.(e, "", true, treeEl);
@@ -417,6 +481,7 @@ function renderTree(): void {
     container.appendChild(treeEl);
     tree = treeEl;
   }
+  retainSelection(notePaths(state.vault.tree));
   tree.textContent = "";
   tree.appendChild(renderNodes(state.vault.tree));
 }
@@ -436,6 +501,7 @@ function renderEmpty(): void {
 /** 別の保管庫へ切り替える。開いていたノートと開閉状態はリセットする */
 function applyVault(info: VaultInfo): void {
   state.vault = info;
+  clearSelection();
   setCurrentPathInternal(null);
   state.pendingContent = null;
   state.collapsedDirs = new Set();
@@ -611,7 +677,10 @@ export function initExplorer(el: HTMLElement, editorHandle: EditorHandle): void 
       state.pendingContent = editor.getContent();
       void flushSave();
     }
-    if (e.key === "Escape") closeSwitcher();
+    if (e.key === "Escape") {
+      closeSwitcher();
+      clearSelection();
+    }
   });
   window.addEventListener("mousedown", (e) => {
     const el = e.target instanceof Element ? e.target : null;
@@ -643,6 +712,7 @@ export function initExplorer(el: HTMLElement, editorHandle: EditorHandle): void 
   }
 
   initFileOps();
+  initMarquee(container);
   renderEmpty();
   void initialVault()
     .then((info) => {
