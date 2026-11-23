@@ -6,12 +6,15 @@ import { codeBlockStyle } from "./editor/code-block";
 import { tablePreview } from "./editor/table-preview";
 import { wikilink } from "./editor/wikilink";
 import { mountInlineTitle } from "./editor/inline-title";
+import { mountTabs } from "./editor/tabs";
 import {
   initExplorer,
   explorerDocChanged,
   openNoteByName,
   onCurrentNoteChanged,
   renameCurrentNote,
+  selectTab,
+  closeTab,
 } from "./explorer";
 import { initSettings } from "./settings";
 import { subscribeDark } from "./settings/theme";
@@ -45,4 +48,10 @@ const noteTitle = mountInlineTitle(document.getElementById("note-title")!, {
 });
 onCurrentNoteChanged((path) => noteTitle.setPath(path));
 
-initExplorer(document.getElementById("sidebar-content")!, editor);
+// タブは保管庫を知らない。切り替え・閉じる前の保存確定は explorer 側が挟む
+const tabs = mountTabs(document.getElementById("tab-bar")!, editor, {
+  onSelect: (key) => void selectTab(key),
+  onClose: (key) => void closeTab(key),
+});
+
+initExplorer(document.getElementById("sidebar-content")!, editor, tabs);

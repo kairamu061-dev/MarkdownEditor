@@ -1,12 +1,12 @@
 import { createFolder, createNote, deletePath, renamePath } from "./api";
 import {
+  closeNotesUnder,
   flushPendingSave,
-  getCurrentPath,
   openNote,
+  openNoteInNewTab,
   refreshTree,
   remapAfterRename,
   setContextMenuHandler,
-  setCurrentPath,
   showStatus,
 } from "./index";
 
@@ -154,11 +154,8 @@ function startRename(path: string, isDir: boolean, row: HTMLElement): void {
 async function doDelete(path: string): Promise<void> {
   try {
     await deletePath(path);
-    // 開いているノートが削除対象（またはその配下）ならスクラッチに戻す
-    const current = getCurrentPath();
-    if (current !== null && (current === path || current.startsWith(`${path}/`))) {
-      setCurrentPath(null);
-    }
+    // 削除対象（またはその配下）を開いているタブを閉じる。アクティブだったなら隣のタブかスクラッチへ
+    closeNotesUnder(path);
     await refreshTree();
   } catch (e) {
     console.error("delete_path failed:", e);
@@ -182,6 +179,16 @@ function showMenu(e: MouseEvent, path: string, isDir: boolean, row: HTMLElement)
 
   menu = document.createElement("div");
   menu.className = "context-menu";
+
+  // ノート行だけ先頭に「新しいタブで開く」（editor/tabs）。フォルダ行・空白部（ルート）には出さない
+  if (!isDir && path !== "") {
+    menu.append(
+      addItem("新しいタブで開く", () => {
+        closeMenu();
+        void openNoteInNewTab(path);
+      }),
+    );
+  }
 
   // 作成先: フォルダ上ならその中、ノート上なら同じ親、空白部ならルート
   const targetDir = isDir ? path : parentDir(path);

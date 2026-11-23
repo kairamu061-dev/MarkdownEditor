@@ -1,5 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { EditorHandle } from "../editor";
+import type { TabsHandle } from "../editor/tabs";
 import { getSettings } from "../settings/api";
 import {
   initialVault,
@@ -29,6 +30,7 @@ const SAVE_DEBOUNCE_MS = 700;
 
 interface ExplorerState {
   vault: VaultInfo | null;
+  /** アクティブなタブのノート（tabs.active() と常に一致させる）。null = スクラッチ文書 */
   currentPath: string | null;
   saveTimer: number | null;
   pendingContent: string | null;
@@ -49,6 +51,7 @@ const state: ExplorerState = {
 
 let container: HTMLElement;
 let editor: EditorHandle;
+let tabs: TabsHandle;
 let statusTimer: number | null = null;
 
 // --- 開いているノートの変化通知（inline-title 向け） ---
@@ -121,19 +124,33 @@ async function flushSave(): Promise<void> {
   }
 }
 
-// --- file-ops 向け公開フック ---
-
-export function getCurrentPath(): string | null {
-  return state.currentPath;
+/**
+ * アクティブなタブが変わる操作の前に、保存待ちを確定する。保存待ちが残ったら false。
+ *
+ * flushSave は書き込み先を確定時点の currentPath から決めるため、切り替えてから確定すると
+ * 前のタブの本文が次のタブのファイルへ書き込まれる。確定中（書き込みの await 中）に入力が
+ * あれば保存待ちがまた立つので、もう 1 回だけ確定する
+ */
+async function settleSave(): Promise<boolean> {
+  await flushSave();
+  if (state.pendingContent !== null) await flushSave();
+  return state.pendingContent === null;
 }
 
-/** リネーム追随用。null はスクラッチ扱いに戻す（file-ops の削除時） */
-export function setCurrentPath(path: string | null): void {
-  setCurrentPathInternal(path);
-  if (path === null) {
+// --- file-ops 向け公開フック ---
+
+/** 削除した path（フォルダなら配下も）のタブを閉じる（file-ops の削除時） */
+export function closeNotesUnder(path: string): void {
+  const under = (p: string) => p === path || p.startsWith(`${path}/`);
+  const current = state.currentPath;
+  if (current !== null && under(current)) {
+    // 削除済みのファイルへ書き戻さないよう、保存待ちを捨てる
+    if (state.saveTimer !== null) clearTimeout(state.saveTimer);
+    state.saveTimer = null;
     state.pendingContent = null;
-    editor.setContent("");
   }
+  for (const key of tabs.keys().filter(under)) tabs.close(key);
+  setCurrentPathInternal(tabs.active());
   renderTree();
 }
 
@@ -234,21 +251,70 @@ export function setContextMenuHandler(handler: ContextMenuHandler): void {
   contextMenuHandler = handler;
 }
 
-// --- ノートを開く ---
+// --- ノートを開く・タブ ---
 
-export async function openNote(relPath: string): Promise<void> {
-  await flushSave();
+/**
+ * ノートを開く。既定はアクティブなタブで、newTab なら新しいタブで。
+ * すでにいずれかのタブで開いていれば、そのタブへ切り替える（同じノートを 2 つの
+ * タブで開くと、互いの保存で上書きし合う）
+ */
+export async function openNote(
+  relPath: string,
+  opts: { newTab?: boolean } = {},
+): Promise<void> {
+  if (tabs.has(relPath)) {
+    await selectTab(relPath);
+    return;
+  }
+  let content: string;
   try {
-    const content = await readNote(relPath);
-    setCurrentPathInternal(relPath);
-    state.pendingContent = null;
-    editor.setContent(content);
-    editor.focus();
-    renderTree();
+    // 読み込みは保存の確定より先に済ませる。待つ間に入力があっても、続く settleSave が拾う
+    content = await readNote(relPath);
   } catch (e) {
     console.error("read_note failed:", e);
     showStatus("読み込みに失敗しました");
+    return;
   }
+  if (!(await settleSave())) {
+    showStatus("保存できていないため切り替えられません");
+    return;
+  }
+  // 待っている間に別の経路で同じノートが開かれていたら、そちらへ切り替えるだけにする
+  if (tabs.has(relPath)) tabs.activate(relPath);
+  else if (opts.newTab) tabs.openNew(relPath, content);
+  else tabs.replaceActive(relPath, content);
+  setCurrentPathInternal(tabs.active());
+  editor.focus();
+  renderTree();
+}
+
+export function openNoteInNewTab(relPath: string): Promise<void> {
+  return openNote(relPath, { newTab: true });
+}
+
+/** タブバーのクリック・Ctrl+Tab から呼ばれる */
+export async function selectTab(key: string): Promise<void> {
+  if (key === state.currentPath) return;
+  if (!(await settleSave())) {
+    showStatus("保存できていないため切り替えられません");
+    return;
+  }
+  tabs.activate(key);
+  setCurrentPathInternal(tabs.active());
+  editor.focus();
+  renderTree();
+}
+
+/** ×・タブの中クリック・Ctrl+W から呼ばれる */
+export async function closeTab(key: string): Promise<void> {
+  // 保存待ちを持つのはアクティブなタブだけなので、裏のタブはそのまま閉じてよい
+  if (key === state.currentPath && !(await settleSave())) {
+    showStatus("保存できていないため閉じられません");
+    return;
+  }
+  tabs.close(key);
+  setCurrentPathInternal(tabs.active());
+  renderTree();
 }
 
 // --- ドラッグ&ドロップ（移動） ---
@@ -340,7 +406,8 @@ function remapPrefix(from: string, to: string): void {
     p === from ? to : p.startsWith(`${from}/`) ? to + p.slice(from.length) : p;
   state.collapsedDirs = new Set([...state.collapsedDirs].map(remap));
   remapSelection(remap);
-  if (state.currentPath !== null) setCurrentPathInternal(remap(state.currentPath));
+  tabs.remap(remap);
+  setCurrentPathInternal(tabs.active());
 }
 
 /** paths を toDir へ順に移す。失敗したものは飛ばして残りを続け、最後に件数を出す */
@@ -433,6 +500,15 @@ function renderNodes(nodes: TreeNode[]): HTMLUListElement {
         clearSelection();
         void openNote(node.path);
       });
+      // 中クリック = 新しいタブで開く。WebView2 は中ボタンの mousedown で自動スクロールを始めるため抑止する
+      row.addEventListener("mousedown", (e) => {
+        if (e.button === 1) e.preventDefault();
+      });
+      row.addEventListener("auxclick", (e) => {
+        if (e.button !== 1) return;
+        clearSelection();
+        void openNoteInNewTab(node.path);
+      });
       li.appendChild(row);
     }
     ul.appendChild(li);
@@ -498,18 +574,27 @@ function renderEmpty(): void {
   container.appendChild(empty);
 }
 
-/** 別の保管庫へ切り替える。開いていたノートと開閉状態はリセットする */
+/** 別の保管庫へ切り替える。開いていたタブと開閉状態はリセットする。
+ *  呼び出し元は先に settleSave を済ませておく（beforeVaultSwitch） */
 function applyVault(info: VaultInfo): void {
   state.vault = info;
   clearSelection();
+  tabs.closeAll();
   setCurrentPathInternal(null);
   state.pendingContent = null;
   state.collapsedDirs = new Set();
-  editor.setContent("");
   renderTree();
 }
 
+/** 保管庫を切り替えてよいか。debounce 中の入力を旧保管庫のノートへ確定してから切り替える */
+async function beforeVaultSwitch(): Promise<boolean> {
+  if (await settleSave()) return true;
+  showStatus("保存できていないため保管庫を切り替えられません");
+  return false;
+}
+
 async function openVaultByDialog(): Promise<void> {
+  if (!(await beforeVaultSwitch())) return;
   try {
     const info = await pickVault();
     if (info) applyVault(info);
@@ -520,6 +605,7 @@ async function openVaultByDialog(): Promise<void> {
 }
 
 async function switchToVault(path: string): Promise<void> {
+  if (!(await beforeVaultSwitch())) return;
   try {
     applyVault(await openVault(path));
   } catch (e) {
@@ -660,9 +746,14 @@ export function explorerDocChanged(content: string): void {
   scheduleSave(content);
 }
 
-export function initExplorer(el: HTMLElement, editorHandle: EditorHandle): void {
+export function initExplorer(
+  el: HTMLElement,
+  editorHandle: EditorHandle,
+  tabsHandle: TabsHandle,
+): void {
   container = el;
   editor = editorHandle;
+  tabs = tabsHandle;
   container.style.position = "relative";
 
   // サイドバー内では WebView2 の既定コンテキストメニューを出さない（BUG-004）。

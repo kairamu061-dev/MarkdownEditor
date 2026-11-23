@@ -19,8 +19,9 @@ export interface InlineTitleHandle {
 
 const UNTITLED = "無題";
 
-/** 保管庫相対パスから表示名を作る。ツリーのリネームと同じ規則（file-ops の baseName） */
-function displayName(relPath: string): string {
+/** 保管庫相対パスから表示名を作る。ツリーのリネームと同じ規則（file-ops の baseName）。
+ *  タブのラベル（editor/tabs）も同じ規則で揃える */
+export function displayName(relPath: string): string {
   const dir = relPath.includes("/") ? relPath.slice(0, relPath.lastIndexOf("/") + 1) : "";
   return relPath.slice(dir.length).replace(/\.md$/i, "");
 }
