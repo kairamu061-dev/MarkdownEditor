@@ -15,7 +15,7 @@
     保管庫名ボタン（＋キャレット）を描画。メニューはフッタの上へ上方向に展開
   - `openSwitcher(anchor)`: `getSettings()` で `recentVaults` / `lastVault` を取得し、プルダウンを生成
   - `switchToVault(path)` / `openVaultByDialog()`: `open_vault` / `pick_vault` を呼び `applyVault` へ
-  - `applyVault(info)`: 保管庫切り替えの共通処理（currentPath・collapsedDirs をリセットし、エディタを空に）
+  - `applyVault(info)`: 保管庫切り替えの共通処理（currentPath・expandedDirs をリセットし、エディタを空に）
   - `showRecentItemMenu(e, path, anchor)`: 履歴項目の右クリックメニュー（2026-07-12 追加）。
     `.context-menu` の既存スタイルを再利用。「履歴から削除」→ `remove_recent_vault` →
     `openSwitcher(anchor)` を呼び直して一覧を開いたまま更新。現在の保管庫では出さない

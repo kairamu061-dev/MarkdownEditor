@@ -34,7 +34,7 @@ interface ExplorerState {
   currentPath: string | null;   // 開いているノートの保管庫相対パス
   saveTimer: number | null;     // デバウンスタイマー ID
   pendingContent: string | null; // 未保存の最新内容
-  collapsedDirs: Set<string>;   // 折りたたまれているフォルダ（BUG-002）
+  expandedDirs: Set<string>;    // 展開しているフォルダ（BUG-002）。既定は全閉じなので空集合 = すべて閉じている
   dragPaths: string[];          // ドラッグ中の項目。選択中のノートを掴めば選択全体（multi-select）。空 = ドラッグしていない
 }
 ```
@@ -47,6 +47,8 @@ export function initExplorer(container: HTMLElement, editor: EditorHandle, tabs:
 // ノートを開く・タブ操作（editor/tabs。詳細は ../../editor/tabs/design.md）
 export function openNote(relPath: string, opts?: { newTab?: boolean }): Promise<void>;
 export function openNoteInNewTab(relPath: string): Promise<void>;
+/** dir とその祖先フォルダを展開する（file-ops が作成先を見せるために使う） */
+export function expandDir(dir: string): void;
 export function selectTab(key: string): Promise<void>;
 export function closeTab(key: string): Promise<void>;
 // 内部: openVault / renderTree / scheduleSave / flushSave / settleSave / showStatus

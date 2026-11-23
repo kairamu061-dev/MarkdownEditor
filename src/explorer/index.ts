@@ -34,8 +34,9 @@ interface ExplorerState {
   currentPath: string | null;
   saveTimer: number | null;
   pendingContent: string | null;
-  /** 折りたたまれているフォルダの相対パス。再描画をまたいで開閉状態を保持する（BUG-002） */
-  collapsedDirs: Set<string>;
+  /** 展開しているフォルダの相対パス。再描画をまたいで開閉状態を保持する（BUG-002）。
+   *  既定は全フォルダ閉じなので、開いたものだけを持つ */
+  expandedDirs: Set<string>;
   /** ドラッグ中のノート/フォルダの相対パス（DnD 移動用）。選択中のノートを掴めば選択全体。空 = ドラッグしていない */
   dragPaths: string[];
 }
@@ -45,7 +46,7 @@ const state: ExplorerState = {
   currentPath: null,
   saveTimer: null,
   pendingContent: null,
-  collapsedDirs: new Set(),
+  expandedDirs: new Set(),
   dragPaths: [],
 };
 
@@ -203,6 +204,12 @@ export async function renameCurrentNote(newBaseName: string): Promise<boolean> {
   remapAfterRename(from, to);
   await refreshTree();
   return true;
+}
+
+/** dir（"" はルート）とその祖先フォルダを展開する。閉じたフォルダの中に作った項目を見せるため（file-ops） */
+export function expandDir(dir: string): void {
+  const parts = dir.split("/").filter(Boolean);
+  for (let i = 1; i <= parts.length; i++) state.expandedDirs.add(parts.slice(0, i).join("/"));
 }
 
 export async function refreshTree(): Promise<void> {
@@ -412,7 +419,7 @@ export function remapAfterRename(from: string, to: string): void {
 function remapPrefix(from: string, to: string): void {
   const remap = (p: string): string =>
     p === from ? to : p.startsWith(`${from}/`) ? to + p.slice(from.length) : p;
-  state.collapsedDirs = new Set([...state.collapsedDirs].map(remap));
+  state.expandedDirs = new Set([...state.expandedDirs].map(remap));
   remapSelection(remap);
   tabs.remap(remap);
   setCurrentPathInternal(tabs.active());
@@ -482,15 +489,15 @@ function renderNodes(nodes: TreeNode[]): HTMLUListElement {
     row.appendChild(label);
 
     if (node.isDir) {
-      const collapsed = state.collapsedDirs.has(node.path);
+      const collapsed = !state.expandedDirs.has(node.path);
       chevron.textContent = collapsed ? "▸" : "▾";
       label.textContent = node.name;
       if (collapsed) li.classList.add("collapsed");
       row.addEventListener("click", () => {
         const nowCollapsed = li.classList.toggle("collapsed");
         chevron.textContent = nowCollapsed ? "▸" : "▾";
-        if (nowCollapsed) state.collapsedDirs.add(node.path);
-        else state.collapsedDirs.delete(node.path);
+        if (nowCollapsed) state.expandedDirs.delete(node.path);
+        else state.expandedDirs.add(node.path);
       });
       makeDropTarget(row, node.path);
       li.appendChild(row);
@@ -590,7 +597,7 @@ function applyVault(info: VaultInfo): void {
   tabs.closeAll();
   setCurrentPathInternal(null);
   state.pendingContent = null;
-  state.collapsedDirs = new Set();
+  state.expandedDirs = new Set();
   renderTree();
 }
 

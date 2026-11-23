@@ -1,6 +1,7 @@
 import { createFolder, createNote, deletePath, renamePath } from "./api";
 import {
   closeNotesUnder,
+  expandDir,
   flushPendingSave,
   openNote,
   openNoteInNewTab,
@@ -38,6 +39,7 @@ async function newNote(dir: string): Promise<void> {
     const rel = join(dir, name);
     try {
       await createNote(rel);
+      expandDir(dir); // 既定でフォルダは閉じているので、作ったノートが見えるよう作成先を開く
       await refreshTree();
       await openNote(rel);
       return;
@@ -58,6 +60,7 @@ async function newFolder(dir: string): Promise<void> {
     const rel = join(dir, name);
     try {
       await createFolder(rel);
+      expandDir(dir);
       await refreshTree();
       return;
     } catch (e) {
