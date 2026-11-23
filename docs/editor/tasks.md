@@ -7,6 +7,7 @@
 - [code-highlight](./code-highlight/tasks.md)
 - [wikilink](./wikilink/tasks.md)
 - [inline-title](./inline-title/tasks.md)
+- [tabs](./tabs/tasks.md)
 
 ## 依存関係
 
@@ -15,3 +16,5 @@
 - wikilink のノートオープンは file-explorer/tree-view の公開フックを利用する
 - inline-title は core に依存しない（CodeMirror の外側の DOM 要素）。
   表示追随とリネームで file-explorer の公開フックを利用する
+- core → tabs（tabs は core の saveSession / restoreSession を使う）。
+  開く・切り替え・追随の手順は file-explorer 側に置き、tabs はキーを不透明に扱う

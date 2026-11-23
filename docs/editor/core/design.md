@@ -45,7 +45,16 @@ interface EditorHandle {
   getContent(): string;
   setContent(text: string): void; // undo 履歴をリセットして差し替え（ファイル切り替え用）
   focus(): void;
+  setDark(dark: boolean): void;   // ライト/ダークの切り替え（settings/theme）
+  saveSession(): EditorSession;   // 編集状態の退避（editor/tabs）
+  restoreSession(session: EditorSession): void; // 退避した状態へ戻す。明暗は現在値に合わせ直す
   destroy(): void;
+}
+
+// タブ切り替え用に退避した編集状態（editor/tabs）。スクロール位置は EditorState に含まれないため別に持つ
+interface EditorSession {
+  readonly state: EditorState;
+  readonly scrollTop: number;
 }
 ```
 

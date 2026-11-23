@@ -1,14 +1,21 @@
-# {機能エリア名} タスク
+# editor/tabs タスク
 
 ## 実装タスク一覧
 
 <!-- ステータス: [ ] 未着手 / [~] 進行中 / [x] 完了 -->
 
-- [ ] {タスク名}
-- [ ] {タスク名}
+- [ ] T1: core に `saveSession` / `restoreSession` を追加する（`src/editor/index.ts`）
+- [ ] T2: `src/editor/tabs.ts` を作る（タブの並び・セッション保持・タブバー描画・キー操作）
+- [ ] T3: `index.html` に `#tab-bar` を追加し、`app.css` にタブバーのスタイルを書く
+- [ ] T4: explorer の `openNote` をタブ対応にし、`settleSave` / `selectTab` / `closeTab` / `openNoteInNewTab` を追加する
+- [ ] T5: 追随（`remapPrefix` → `tabs.remap`、`closeNotesUnder`、`applyVault` の `closeAll` と保存確定）
+- [ ] T6: ツリーのノート行の中クリック、右クリックメニュー「新しいタブで開く」
+- [ ] T7: `main.ts` の配線
+- [ ] T8: `tsc --noEmit` を通す
+- [ ] T9: Windows 動作確認チェックリストを書き、結果を test-cases.md に反映する
 
 ## 依存関係
 
-<!-- タスク間の順序制約を記述する -->
-
-- {タスクA} → {タスクB}（AはBの前提）
+- T1 → T2（tabs.ts はセッション API を使う）
+- T2 → T4 → T5 / T6（explorer は TabsHandle を使う）
+- T2〜T6 → T7 → T8 → T9

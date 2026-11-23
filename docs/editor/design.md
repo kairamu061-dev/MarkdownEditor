@@ -7,6 +7,7 @@
 - [code-highlight](./code-highlight/design.md) — コードブロックの言語別ハイライト
 - [wikilink](./wikilink/design.md) — `[[ノート名]]` リンク
 - [inline-title](./inline-title/design.md) — エディタ最上部のノート名表示とインラインリネーム
+- [tabs](./tabs/design.md) — 複数ノートのタブ表示とタブごとの編集状態の保持
 
 ## 横断事項
 
@@ -16,4 +17,4 @@
 - **inline-title はこの例外**。CodeMirror の拡張ではなく `#main-content` の兄弟要素として置く。
   本文テキストに一切触れない（H1 見出しと連動しない）方針のため、エディタの状態管理から切り離している
 - editor 配下は保管庫（vault）の知識を持たない。ファイル操作が必要な場合は
-  コールバックとして受け取り、実処理は file-explorer 側に置く（wikilink / inline-title とも同じ）
+  コールバックとして受け取り、実処理は file-explorer 側に置く（wikilink / inline-title / tabs とも同じ）
