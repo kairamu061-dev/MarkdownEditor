@@ -54,7 +54,7 @@ interface EditorHandle {
 // タブ切り替え用に退避した編集状態（editor/tabs）。スクロール位置は EditorState に含まれないため別に持つ
 interface EditorSession {
   readonly state: EditorState;
-  readonly scrollTop: number;
+  readonly scroll: ReturnType<EditorView["scrollSnapshot"]>; // px ではなく行位置で戻す（BUG-038）
 }
 ```
 

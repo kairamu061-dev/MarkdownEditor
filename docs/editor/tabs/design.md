@@ -5,7 +5,7 @@
 | 技術 | 用途 | 選定理由 |
 |------|------|----------|
 | `EditorView` 1 つ + タブごとの `EditorState` | 編集状態の保持 | `EditorState` は不変値なので、退避して `view.setState()` で戻すだけで undo 履歴・選択が復元される。タブの数だけビューを作るより軽く、拡張（live-preview 等）の二重登録も起きない |
-| スクロール位置の個別退避（`scrollDOM.scrollTop`） | スクロール復元 | スクロール位置はビュー側にあり `EditorState` に含まれないため |
+| スクロール位置の個別退避（`view.scrollSnapshot()`） | スクロール復元 | スクロール位置はビュー側にあり `EditorState` に含まれないため。px ではなく行位置で持つ（BUG-038） |
 | 素の DOM（`<div>` の並び） | タブバー | inline-title・ツリーと同じ実装パターン。CodeMirror の外に置く |
 | ウィンドウの `keydown` | Ctrl+Tab / Ctrl+W | フォーカスがエディタ外（inline-title・ツリー）にあっても効かせるため。CodeMirror の keymap はエディタにフォーカスがあるときしか動かない |
 
@@ -84,10 +84,11 @@ openNote(path, { newTab })
 
 ### セッションの退避と復元（core）
 
-- `saveSession()` は `{ state: view.state, scrollTop: view.scrollDOM.scrollTop }` を返す
-- `restoreSession(s)` は `view.setState(s.state)` のあと、
+- `saveSession()` は `{ state: view.state, scroll: view.scrollSnapshot() }` を返す
+- `restoreSession(s)` は `view.setState(s.state)` のあと、1 回の dispatch で
   - `darkCompartment` を現在の明暗で reconfigure する（裏にいる間に配色プリセットが変わっていても揃える）
-  - `requestAnimationFrame` で `scrollTop` を戻す（`setState` 直後は高さの計測前で、戻しても効かない）
+  - `s.scroll`（スクロールのスナップショット）を流す。先頭に見えていた行とそこからのずれで戻すので、
+    `setState` 直後に見えていない行の高さが推定値でも位置がずれない（BUG-038。当初は `scrollTop` を px で戻していた）
 - `setState` はトランザクションを経由しないため `onDocChanged` は呼ばれない。切り替えだけで保存が走ることはない
 
 ## データ構造
@@ -97,7 +98,7 @@ openNote(path, { newTab })
 /** タブ切り替え用に退避した編集状態。中身は core の外では触らない */
 export interface EditorSession {
   readonly state: EditorState;
-  readonly scrollTop: number;
+  readonly scroll: ReturnType<EditorView["scrollSnapshot"]>; // 行位置ベースのスクロール（BUG-038）
 }
 
 // src/editor/tabs.ts（モジュール内部）

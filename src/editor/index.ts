@@ -31,8 +31,9 @@ export interface MountOptions {
 /** タブ切り替え用に退避した編集状態。中身は core の外では触らない（editor/tabs） */
 export interface EditorSession {
   readonly state: EditorState;
-  /** スクロール位置はビュー側にあり EditorState に含まれないため別に持つ */
-  readonly scrollTop: number;
+  /** スクロール位置はビュー側にあり EditorState に含まれないため別に持つ。
+   *  px ではなく「先頭に見えている行とそこからのずれ」で持つ（BUG-038） */
+  readonly scroll: ReturnType<EditorView["scrollSnapshot"]>;
 }
 
 export interface EditorHandle {
@@ -108,15 +109,15 @@ export function mountEditor(
       dark = next;
       view.dispatch({ effects: darkCompartment.reconfigure(darkTheme(next)) });
     },
-    saveSession: () => ({ state: view.state, scrollTop: view.scrollDOM.scrollTop }),
+    saveSession: () => ({ state: view.state, scroll: view.scrollSnapshot() }),
     restoreSession: (session) => {
       // setState はトランザクションを経由しないので onDocChanged は呼ばれない（切り替えで保存は走らない）
       view.setState(session.state);
-      // 裏にいる間に配色プリセットが変わっていても、現在の明暗に揃える
-      view.dispatch({ effects: darkCompartment.reconfigure(darkTheme(dark)) });
-      // setState 直後は高さの計測前で、ここで戻しても効かない
-      requestAnimationFrame(() => {
-        view.scrollDOM.scrollTop = session.scrollTop;
+      // 裏にいる間に配色プリセットが変わっていても、現在の明暗に揃える。
+      // スクロールは行位置で戻す。setState 直後は見えていない行の高さが推定値なので、
+      // px（scrollTop）で戻すと実測との差だけずれる（BUG-038）
+      view.dispatch({
+        effects: [darkCompartment.reconfigure(darkTheme(dark)), session.scroll],
       });
     },
     destroy: () => view.destroy(),

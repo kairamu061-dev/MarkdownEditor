@@ -174,15 +174,26 @@ body {
   overflow-y: hidden;
   background-color: var(--bg-sidebar);
   border-bottom: 1px solid var(--border);
-  scrollbar-width: thin;
+}
+
+/* 配色は全体の ::-webkit-scrollbar に任せ、太さだけ細くしてタブのラベルに掛からないようにする。
+   標準プロパティの scrollbar-width を指定すると Chromium は ::-webkit-scrollbar を無視して
+   OS 標準の見た目に戻るので使わない（BUG-039） */
+.tab-bar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tab-bar::-webkit-scrollbar-thumb {
+  border-width: 1px;
+  border-radius: 3px;
 }
 
 .tab {
-  flex: 0 1 auto;
+  /* あふれても縮めず横スクロールに任せる。縮めると頭が同じ名前のタブが見分けられなくなる（BUG-040） */
+  flex: none;
   display: flex;
   align-items: center;
   gap: 4px;
-  min-width: 80px;
   max-width: 200px;
   padding: 0 6px 0 12px;
   border-right: 1px solid var(--border);

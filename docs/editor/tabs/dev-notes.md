@@ -24,7 +24,9 @@
 
 | 変更内容 | 理由 |
 |----------|------|
-| なし（design.md どおり） | — |
+| スクロール位置の退避を `scrollTop`（px）から `view.scrollSnapshot()` に変更（BUG-038） | `setState` 直後は見えていない行の高さが推定値で、px で戻すと実測との差だけずれた（Windows で最大 28px、headless では数百 px）。スナップショットは行位置基準なので推定値の影響を受けない。rAF での遅延も不要になった |
+| タブを縮めない（`flex: none`、`min-width` 廃止）（BUG-040） | あふれたときに 80px まで縮み、日本語名が 3 文字ほどしか見えなかった。横スクロールがあるので縮める必要がない |
+| タブバーで `scrollbar-width` を使わない（BUG-039） | Chromium は標準プロパティを指定すると `::-webkit-scrollbar` の装飾を無視し、OS 標準の見た目に戻す。全体の配色に任せ、`.tab-bar::-webkit-scrollbar` で太さだけ 6px にした |
 
 ## 今後の課題
 
