@@ -132,6 +132,12 @@ async function flushSave(): Promise<void> {
  * あれば保存待ちがまた立つので、もう 1 回だけ確定する
  */
 async function settleSave(): Promise<boolean> {
+  // スクラッチ文書は保存しないので常に確定済み。Ctrl+S は currentPath を見ずに pendingContent を
+  // 立てるため、ここで捨てないと以後の切り替えがすべて「保存できていない」で止まる
+  if (state.currentPath === null) {
+    state.pendingContent = null;
+    return true;
+  }
   await flushSave();
   if (state.pendingContent !== null) await flushSave();
   return state.pendingContent === null;
@@ -314,6 +320,8 @@ export async function closeTab(key: string): Promise<void> {
   }
   tabs.close(key);
   setCurrentPathInternal(tabs.active());
+  // × を押すとフォーカスはそのボタンへ移り、ボタンは再描画で消える。本文へ戻す
+  editor.focus();
   renderTree();
 }
 

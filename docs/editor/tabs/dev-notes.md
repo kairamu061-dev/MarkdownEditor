@@ -16,6 +16,8 @@
 | 問題 | 対処 |
 |------|------|
 | spec の初稿は「入力欄で編集中に Ctrl+W を押すと先に blur で確定する」と書いていたが、実際は keydown で blur は起きず、inline-title の再描画で入力が黙って捨てられる | 入力欄（`HTMLInputElement`）にフォーカスがあるときはタブのキー操作を無視する。spec と E-09 を合わせて修正 |
+| Ctrl+S はスクラッチ（`currentPath === null`）でも `pendingContent` を立て、`flushSave` はそれを消さずに戻る。従来は `openNote` が読み込み後に `pendingContent = null` で上書きして隠れていたが、`settleSave` で止める作りにした結果、以後の切り替えがすべて止まるようになった（レビューで発見） | `settleSave` の先頭で、スクラッチなら `pendingContent` を捨てて確定済みとする。不変条件の判定を 1 箇所に置くため、Ctrl+S 側ではなくここで扱う。E-19 を追加 |
+| × で閉じるとフォーカスが × ボタンに移り、ボタンは再描画で消えるため、続く入力がどこにも入らない | `closeTab` の最後で `editor.focus()` |
 | `openNote` は読み込み → 置き換えの間に await があり、待つ間の入力が次のノートのパスで保存されうる | 読み込みを先に済ませ、`settleSave` → 同期の置き換え、の順に固定（design の不変条件）。`settleSave` は確定中の入力に備えて最大 2 回確定する |
 
 ## 設計からの変更点
