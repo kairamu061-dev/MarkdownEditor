@@ -6,7 +6,7 @@
 |------|------|----------|
 | 素の DOM（`<div>` + `<input>` 差し替え） | タイトル行 | CodeMirror の外に置く独立要素。既存のツリーリネーム（`startRename`）と同じ実装パターンで揃う |
 | CodeMirror 拡張ではなく兄弟要素 | 配置 | 本文の一部にすると文書テキストに影響しうる。H1 連動をしない方針（overview 参照）とも整合し、エディタの状態管理から完全に切り離せる |
-| 購読コールバック（`onCurrentNoteChanged`） | 表示の追随 | `state.currentPath` を変える箇所が 4 つ（`openNote` / `remapPrefix` / `applyVault` / `setCurrentPath`）に散っており、各所から直接 DOM を触ると結合が増える |
+| 購読コールバック（`onCurrentNoteChanged`） | 表示の追随 | `state.currentPath` を変える箇所が複数（`openNote` / `selectTab` / `closeTab` / `closeNotesUnder` / `remapPrefix` / `applyVault`）に散っており、各所から直接 DOM を触ると結合が増える |
 
 ## アーキテクチャ
 
@@ -31,10 +31,12 @@ src/styles/app.css             # 変更: .note-title のスタイル
 
 ```
 state.currentPath を変更する箇所
-  ├─ openNote()        ノートを開いた
-  ├─ remapPrefix()     リネーム / 移動でパスが変わった
-  ├─ applyVault()      保管庫を切り替えた（null になる）
-  └─ setCurrentPath()  外部から設定された
+  ├─ openNote()          ノートを開いた
+  ├─ selectTab()         タブを切り替えた（editor/tabs）
+  ├─ closeTab()          タブを閉じた（隣のタブ、または null）
+  ├─ closeNotesUnder()   削除でタブが閉じた（file-ops。旧 setCurrentPath(null)）
+  ├─ remapPrefix()       リネーム / 移動でパスが変わった
+  └─ applyVault()        保管庫を切り替えた（null になる）
         ↓ すべて notifyCurrentNoteChanged() を通す
    購読者（inline-title）が表示を更新
 ```

@@ -14,8 +14,8 @@ src/explorer/
                   # （ヘッダの [+] ボタンは 2026-07-12 に廃止。spec.md「廃止された導線」参照）
 ```
 
-- tree-view（index.ts）が公開する内部フック（ツリー再取得 `refreshTree`、ノートオープン `openNote`、
-  編集中パスの取得/更新）を使って実装する。vault コマンドは api.ts 経由
+- tree-view（index.ts）が公開する内部フック（ツリー再取得 `refreshTree`、ノートオープン `openNote` /
+  `openNoteInNewTab`、削除したノートのタブを閉じる `closeNotesUnder`）を使って実装する。vault コマンドは api.ts 経由
 - コンテキストメニューは単一のシングルトン要素を使い回す（開くたびに項目を再構築）
 - 新規ノートの連番はフロントで既存ツリーから計算し、`create_note` の already exists エラー時は次の連番で 1 回だけ再試行
 - **リネームの確定前に `flushPendingSave()` を await する**。自動保存は 700ms の debounce のため、
@@ -43,8 +43,10 @@ export function initFileOps(): void; // index.ts の initExplorer から呼ば�
 
 // src/explorer/index.ts に追加する公開フック
 export function refreshTree(): Promise<void>;
-export function getCurrentPath(): string | null;
-export function setCurrentPath(path: string | null): void; // null でスクラッチ扱いに戻す
+// 削除した path（フォルダなら配下も）のタブを閉じる。アクティブだったなら保存待ちを捨て、
+// 隣のタブ（無ければスクラッチ）へ。旧 getCurrentPath / setCurrentPath(null) を置き換え（editor/tabs）
+export function closeNotesUnder(path: string): void;
+export function openNoteInNewTab(relPath: string): Promise<void>; // メニュー「新しいタブで開く」
 
 // editor/inline-title のために追加（詳細は ../../editor/inline-title/design.md）
 export function onCurrentNoteChanged(cb: (path: string | null) => void): void;

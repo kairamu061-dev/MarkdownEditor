@@ -43,8 +43,13 @@ interface ExplorerState {
 
 ```typescript
 // src/explorer/index.ts
-export function initExplorer(container: HTMLElement, editor: EditorHandle): void;
-// 内部: openVault / renderTree / openNote / scheduleSave / saveNow / showStatus
+export function initExplorer(container: HTMLElement, editor: EditorHandle, tabs: TabsHandle): void;
+// ノートを開く・タブ操作（editor/tabs。詳細は ../../editor/tabs/design.md）
+export function openNote(relPath: string, opts?: { newTab?: boolean }): Promise<void>;
+export function openNoteInNewTab(relPath: string): Promise<void>;
+export function selectTab(key: string): Promise<void>;
+export function closeTab(key: string): Promise<void>;
+// 内部: openVault / renderTree / scheduleSave / flushSave / settleSave / showStatus
 // DnD 移動（内部）:
 //   movableTo(toDir): string[]   dragPaths のうち toDir へ実際に移すもの。自身・子孫を含めば []、既に toDir にあるものは除外
 //   canDrop(toDir): boolean      movableTo(toDir) が 1 件以上
@@ -55,7 +60,8 @@ export function initExplorer(container: HTMLElement, editor: EditorHandle): void
 範囲選択になる（[multi-select](../multi-select/design.md)）。
 
 `state.currentPath` への代入は内部関数 `setCurrentPathInternal` に集約し、そこで購読者へ通知する
-（`openNote` / `remapPrefix` / `applyVault` / `setCurrentPath` の 4 箇所から呼ぶ）。
+（`openNote` / `selectTab` / `closeTab` / `closeNotesUnder` / `remapPrefix` / `applyVault` から呼ぶ）。
+`currentPath` は常にアクティブなタブのキー（`tabs.active()`）と一致させる。
 代入経路を 1 本にしておかないと、追随する側（inline-title）の表示が漏れる。
 購読 API は [editor/inline-title](../../editor/inline-title/design.md) を参照。
 

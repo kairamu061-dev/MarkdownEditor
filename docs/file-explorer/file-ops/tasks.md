@@ -4,7 +4,7 @@
 
 <!-- ステータス: [ ] 未着手 / [~] 進行中 / [x] 完了 -->
 
-- [x] index.ts への公開フック追加（refreshTree / getCurrentPath / setCurrentPath）
+- [x] index.ts への公開フック追加（refreshTree / getCurrentPath / setCurrentPath）※ 後に editor/tabs で closeNotesUnder へ置き換え
 - [x] [+] ボタンと連番付き新規作成
 - [x] コンテキストメニュー（リネーム / 二段階削除）
 - [x] インラインリネーム入力と編集中ノートへの追随
