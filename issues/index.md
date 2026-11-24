@@ -52,7 +52,7 @@
 | [BUG-035](./tickets/BUG-035.md) | 文章の下の行に `-` を入れると上の文章が見出し 2 になる | editor/core | Closed |
 | [BUG-036](./tickets/BUG-036.md) | リネーム入力欄の中をクリックすると打った文字がノート本文に入って保存される | file-explorer/file-ops | Closed |
 | [BUG-037](./tickets/BUG-037.md) | verify-build.bat が「( was unexpected at this time.」で止まる | tooling | Closed |
-| [BUG-038](./tickets/BUG-038.md) | タブを切り替えて戻ると、スクロール位置が最大 28px ずれる | editor/tabs | Fixed |
+| [BUG-038](./tickets/BUG-038.md) | タブを切り替えて戻ると、スクロール位置が最大 28px ずれる | editor/tabs | Closed |
 | [BUG-039](./tickets/BUG-039.md) | タブバーの横スクロールバーが Windows 標準の見た目になる | editor/tabs | Closed |
 | [BUG-040](./tickets/BUG-040.md) | タブが多いと、日本語の名前のタブが「ノート…」ばかりになり見分けられない | editor/tabs | Closed |
-| [BUG-041](./tickets/BUG-041.md) | 1 文字の名前のタブは、中央をクリックすると切り替わらずに閉じる | editor/tabs | Fixed |
+| [BUG-041](./tickets/BUG-041.md) | 1 文字の名前のタブは、中央をクリックすると切り替わらずに閉じる | editor/tabs | Closed |
