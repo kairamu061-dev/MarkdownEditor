@@ -189,11 +189,13 @@ body {
 }
 
 .tab {
-  /* あふれても縮めず横スクロールに任せる。縮めると頭が同じ名前のタブが見分けられなくなる（BUG-040） */
+  /* あふれても縮めず横スクロールに任せる。縮めると頭が同じ名前のタブが見分けられなくなる（BUG-040）。
+     最小幅は残す。無いと 1 文字の名前のタブは中央が × に当たり、切り替えのつもりで閉じてしまう（BUG-041） */
   flex: none;
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 80px;
   max-width: 200px;
   padding: 0 6px 0 12px;
   border-right: 1px solid var(--border);

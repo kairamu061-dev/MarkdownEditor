@@ -87,8 +87,10 @@ openNote(path, { newTab })
 - `saveSession()` は `{ state: view.state, scroll: view.scrollSnapshot() }` を返す
 - `restoreSession(s)` は `view.setState(s.state)` のあと、1 回の dispatch で
   - `darkCompartment` を現在の明暗で reconfigure する（裏にいる間に配色プリセットが変わっていても揃える）
-  - `s.scroll`（スクロールのスナップショット）を流す。先頭に見えていた行とそこからのずれで戻すので、
-    `setState` 直後に見えていない行の高さが推定値でも位置がずれない（BUG-038。当初は `scrollTop` を px で戻していた）
+  - `s.scroll`（スクロールのスナップショット）を流す。先頭に見えていた行とそこからのずれで戻す（BUG-038。当初は `scrollTop` を px で戻していた）
+- 次のフレームで同じスナップショットをもう一度流す。1 回目は `setState` 直後の推定の高さで位置を決めるため、
+  見出しのように推定と実測が違う行が絡むと、実測後に差（推定 22px・実測 31px なら 9px）が残る。
+  2 回目は実測済みの高さで合わせ直す。そのフレーム内に doc が変わっていたら（別のタブへ切り替えた・入力した）当て直さない
 - `setState` はトランザクションを経由しないため `onDocChanged` は呼ばれない。切り替えだけで保存が走ることはない
 
 ## データ構造

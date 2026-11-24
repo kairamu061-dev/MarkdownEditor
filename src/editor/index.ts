@@ -119,6 +119,14 @@ export function mountEditor(
       view.dispatch({
         effects: [darkCompartment.reconfigure(darkTheme(dark)), session.scroll],
       });
+      // 1 回目は推定の高さで位置を決めるため、見出しなど推定と実測が違う行が絡むと
+      // 実測後にずれが残る（推定 22px・実測 31px の見出しで 9px）。実測が済んだ次のフレームで
+      // もう一度同じスナップショットを当てて、実測の高さで位置を合わせ直す（BUG-038 の残り）
+      // 直前の dispatch で state は作り直されるので、比べるのは doc（そのフレーム内に別のタブへ
+      // 切り替わった・入力した場合は doc が変わるので当て直さない）
+      requestAnimationFrame(() => {
+        if (view.state.doc === session.state.doc) view.dispatch({ effects: session.scroll });
+      });
     },
     destroy: () => view.destroy(),
   };
